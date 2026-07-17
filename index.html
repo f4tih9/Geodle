@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geodle - Ülke Tahmin Oyunu</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --correct: #10b981;
+            --wrong: #ef4444;
+            --border: #334155;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .game-box {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        select {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-color);
+            color: var(--text);
+            outline: none;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(to right, #2563eb, #3b82f6);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:active { transform: scale(0.97); }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(100px, 1fr));
+            gap: 8px;
+            text-align: center;
+            min-width: 650px;
+        }
+
+        .header-cell {
+            font-weight: 600;
+            font-size: 13px;
+            color: #94a3b8;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .cell {
+            padding: 15px 5px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 45px;
+            animation: reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .match { background-color: var(--correct); }
+        .mismatch { background-color: var(--wrong); }
+
+        @keyframes reveal {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .win-screen {
+            display: none;
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid var(--correct);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>GEODLE</h1>
+        <p style="color: #94a3b8; margin: 5px 0 0 0;">Gizli ülkeyi bulmak için kriterleri eşleştir!</p>
+    </header>
+
+    <div class="game-box">
+        <div class="win-screen" id="winScreen">🎉 Tebrikler! Gizli ülkeyi doğru tahmin ettiniz!</div>
+
+        <div class="controls" id="inputSection">
+            <select id="countryDropdown">
+                <option value="">-- Bir Ülke Seçin --</option>
+            </select>
+            <button onclick="submitGuess()">Tahmin Et</button>
+        </div>
+
+        <div class="table-wrapper">
+            <div class="grid-container">
+                <div class="header-cell">Ülke</div>
+                <div class="header-cell">Kıta</div>
+                <div class="header-cell">Nüfus</div>
+                <div class="header-cell">Yüzölçümü</div>
+                <div class="header-cell">Deniz Kıyısı</div>
+                <div class="header-cell">Komşuluk</div>
+            </div>
+            <div id="historyRows" class="grid-container" style="margin-top: 8px;">
+                <!-- Tahmin satırları JS ile buraya dolacak -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const countryDB = [
+            { ad: "Türkiye", kita: "Asya/Avrupa", nufus: 85, alan: 783, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan"] },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84, alan: 357, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg"] },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68, alan: 543, kiyi: "Var", komsular: ["Almanya", "Belçika", "Lüksemburg", "İsviçre", "İtalya", "İspanya"] },
+            { ad: "İsviçre", kita: "Avrupa", nufus: 9, alan: 41, kiyi: "Yok", komsular: ["Almanya", "Fransa", "İtalya", "Avusturya"] },
+            { ad: "İran", kita: "Asya", nufus: 89, alan: 1648, kiyi: "Var", komsular: ["Türkiye", "Irak", "Pakistan", "Afganistan", "Türkmenistan", "Ermenistan", "Azerbaycan"] },
+            { ad: "Irak", kita: "Asya", nufus: 45, alan: 438, kiyi: "Var", komsular: ["Türkiye", "Suriye", "Ürdün", "Suudi Arabistan", "Kuveyt", "İran"] },
+            { ad: "Suriye", kita: "Asya", nufus: 23, alan: 185, kiyi: "Var", komsular: ["Türkiye", "Lübnan", "İsrail", "Ürdün", "Irak"] },
+            { ad: "Yunanistan", kita: "Avrupa", nufus: 10, alan: 131, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Kuzey Makedonya", "Arnavutluk"] }
+        ];
+
+        const targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)];
+
+        const dropdown = document.getElementById("countryDropdown");
+        countryDB.sort((a,b) => a.ad.localeCompare(b.ad)).forEach(c => {
+            let el = document.createElement("option");
+            el.value = c.ad;
+            el.textContent = c.ad;
+            dropdown.appendChild(el);
+        });
+
+        function submitGuess() {
+            const guessName = dropdown.value;
+            if (!guessName) return;
+
+            const guess = countryDB.find(c => c.ad === guessName);
+            const history = document.getElementById("historyRows");
+
+            history.appendChild(createCell(guess.ad, guess.ad === targetCountry.ad));
+            history.appendChild(createCell(guess.kita, guess.kita === targetCountry.kita));
+
+            if (guess.nufus === targetCountry.nufus) {
+                history.appendChild(createCell("Eşit", true));
+            } else {
+                let popText = guess.nufus < targetCountry.nufus ? "Yukarı ⬆️" : "Aşağı ⬇️";
+                history.appendChild(createCell(popText, false));
+            }
+
+            if (guess.alan === targetCountry.alan) {
+                history.appendChild(createCell("Eşit", true));
+            } else {
+                let areaText = guess.alan < targetCountry.alan ? "Yukarı ⬆️" : "Aşağı ⬇️";
+                history.appendChild(createCell(areaText, false));
+            }
+
+            const kiyiEslesmesi = guess.kiyi === targetCountry.kiyi;
+            history.appendChild(createCell(`Kıyı: ${guess.kiyi}`, kiyiEslesmesi));
+
+            if (guess.ad === targetCountry.ad) {
+                history.appendChild(createCell("Hedef Ülke", true));
+            } else {
+                const komsuMu = guess.komsular.includes(targetCountry.ad);
+                if (komsuMu) {
+                    history.appendChild(createCell("Komşu 👍", true));
+                } else {
+                    history.appendChild(createCell("Komşu Değil ❌", false));
+                }
+            }
+
+            dropdown.options[dropdown.selectedIndex].remove();
+            dropdown.value = "";
+
+            if (guess.ad === targetCountry.ad) {
+                document.getElementById("winScreen").style.display = "block";
+                document.getElementById("inputSection").style.display = "none";
+            }
+        }
+
+        function createCell(text, isMatch) {
+            const cell = document.createElement("div");
+            cell.className = `cell ${isMatch ? 'match' : 'mismatch'}`;
+            cell.textContent = text;
+            return cell;
+        }
+    </script>
+</body>
+</html>
