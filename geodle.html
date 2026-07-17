@@ -34,11 +34,27 @@
         <div class="header-cell">Komşu</div>
     </div>
 
-    <script>
-        const countryDB = [
-            { ad: "Türkiye", kita: "Asya", nufus: 85, alan: 783, kiyi: "Var", komsular: ["Bulgaristan"] },
-            { ad: "Bulgaristan", kita: "Avrupa", nufus: 6, alan: 110, kiyi: "Var", komsular: ["Türkiye"] }
-        ];
+    let countryDB = [];
+let target;
+const input = document.getElementById('countryInput');
+
+// Veriyi JSON dosyasından çekiyoruz
+fetch('countries.json')
+    .then(response => response.json())
+    .then(data => {
+        countryDB = data;
+        // Tüm ülkeler yüklendikten sonra hedefi seçiyoruz
+        target = countryDB[Math.floor(Math.random() * countryDB.length)];
+        console.log("Hedef ülke seçildi:", target.ad);
+    })
+    .catch(error => console.error('JSON dosyası yüklenemedi:', error));
+
+function submitGuess() {
+    // countryDB artık dolu olduğu için burası çalışacak
+    const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
+    if (!guess) return;
+    
+    // ... geri kalan kodların aynı kalabilir ...
         
         let target = countryDB[0]; 
         const input = document.getElementById('countryInput');
