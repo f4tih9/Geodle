@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geodle - Coğrafya Tahmin Oyunu</title>
+    <style>
+        :root {
+            --correct: #10b981;
+            --wrong: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-section {
+            width: 100%;
+            max-width: 950px;
+            background-color: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            box-sizing: border-box;
+            margin-top: 20px;
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .controls { display: flex; gap: 12px; margin-bottom: 25px; position: relative; }
+        .search-container { position: relative; flex: 1; }
+        #countryInput { width: 100%; padding: 14px; font-size: 16px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; outline: none; }
+        
+        .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border: 1px solid #334155; max-height: 200px; overflow-y: auto; z-index: 10; padding: 0; margin: 0; list-style: none; }
+        .suggestions-list li { padding: 12px; cursor: pointer; color: white; }
+        .suggestions-list li:hover { background: #334155; }
+        
+        .btn-guess { padding: 14px 28px; background: #2563eb; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-guess:hover { background: #1d4ed8; }
+        
+        .table-wrapper { overflow-x: auto; width: 100%; }
+        .grid-container { display: grid; grid-template-columns: repeat(6, minmax(110px, 1fr)); gap: 10px; text-align: center; min-width: 680px; }
+        .header-cell { color: #94a3b8; font-size: 14px; font-weight: bold; padding-bottom: 8px; border-bottom: 2px solid #334155; }
+        
+        .cell { padding: 15px 5px; font-size: 15px; font-weight: bold; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; background: #334155; box-sizing: border-box; }
+        
+        .arrow-box { font-size: 26px; font-weight: 900; margin-top: 2px; line-height: 1; }
+        .match { background-color: var(--correct); }
+        .mismatch { background-color: var(--wrong); }
+
+        .win-screen { display: none; background: rgba(16, 185, 129, 0.2); border: 2px solid var(--correct); padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .win-screen h3 { margin: 0 0 10px 0; color: var(--correct); }
+    </style>
+</head>
+<body>
+
+    <div class="game-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin:0; color:#38bdf8; font-size: 26px;">🟩❌ GEODLE</h3>
+            <button onclick="window.close()" style="background:none; border:none; color:white; font-size:16px; cursor:pointer; border:1px solid #334155; padding: 5px 10px; border-radius:6px;">Sayfayı Kapat</button>
+        </div>
+        
+        <div class="win-screen" id="winScreen">
+            <h3>🎉 Tebrikler! Hedef Ülkeyi Buldunuz!</h3>
+            <button onclick="startNewGame()" style="padding:10px 20px; background:var(--correct); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Yeniden Oyna</button>
+        </div>
+
+        <div class="controls" id="inputSection">
+            <div class="search-container">
+                <input type="text" id="countryInput" placeholder="Ülke adı yazın..." autocomplete="off">
+                <ul class="suggestions-list" id="suggestions"></ul>
+            </div>
+            <button class="btn-guess" onclick="submitGuess()">Tahmin Et</button>
+        </div>
+
+        <div class="table-wrapper">
+            <div class="grid-container">
+                <div class="header-cell">Ülke</div>
+                <div class="header-cell">Kıta</div>
+                <div class="header-cell">Nüfus</div>
+                <div class="header-cell">Yüzölçümü</div>
+                <div class="header-cell">Deniz Kıyısı</div>
+                <div class="header-cell">Komşuluk</div>
+            </div>
+            <div id="historyRows" class="grid-container" style="margin-top: 8px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const countryDB = [
+            { ad: "Afganistan", kita: "Asya", nufus: 42.2, alan: 652864, kiyi: "Yok", komsular: ["İran", "Pakistan", "Çin", "Tacikistan", "Türkmenistan", "Özbekistan"] },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg"] },
+            { ad: "Amerika Birleşik Devletleri", kita: "Kuzey Amerika", nufus: 339.9, alan: 9833517, kiyi: "Var", komsular: ["Kanada", "Meksika"] },
+            { ad: "Andorra", kita: "Avrupa", nufus: 0.08, alan: 468, kiyi: "Yok", komsular: ["Fransa", "İspanya"] },
+            { ad: "Angola", kita: "Afrika", nufus: 36.6, alan: 1246700, kiyi: "Var", komsular: ["Kongo Demokratik Cumhuriyeti", "Kongo Cumhuriyeti", "Namibya", "Zambiya"] },
+            { ad: "Antigua ve Barbuda", kita: "Kuzey Amerika", nufus: 0.1, alan: 442, kiyi: "Var", komsular: [] },
+            { ad: "Arjantin", kita: "Güney Amerika", nufus: 46.2, alan: 2780400, kiyi: "Var", komsular: ["Bolivya", "Brezilya", "Şili", "Paraguay", "Uruguay"] },
+            { ad: "Arnavutluk", kita: "Avrupa", nufus: 2.8, alan: 28748, kiyi: "Var", komsular: ["Yunanistan", "Karadağ", "Kuzey Makedonya", "Sırbistan"] },
+            { ad: "Avustralya", kita: "Okyanusya", nufus: 26.4, alan: 7692024, kiyi: "Var", komsular: [] },
+            { ad: "Avusturya", kita: "Avrupa", nufus: 9.1, alan: 83871, kiyi: "Yok", komsular: ["Almanya", "Çekya", "Slovakya", "Macaristan", "Slovenya", "İtalya", "İsviçre", "Lihtenştayn"] },
+            { ad: "Azerbaycan", kita: "Asya", nufus: 10.2, alan: 86600, kiyi: "Yok", komsular: ["Ermenistan", "Gürcistan", "İran", "Rusya", "Türkiye"] },
+            { ad: "Bahamalar", kita: "Kuzey Amerika", nufus: 0.4, alan: 13943, kiyi: "Var", komsular: [] },
+            { ad: "Bahreyn", kita: "Asya", nufus: 1.5, alan: 765, kiyi: "Var", komsular: [] },
+            { ad: "Bangladeş", kita: "Asya", nufus: 173.0, alan: 147570, kiyi: "Var", komsular: ["Hindistan", "Myanmar"] },
+            { ad: "Barbados", kita: "Kuzey Amerika", nufus: 0.3, alan: 430, kiyi: "Var", komsular: [] },
+            { ad: "Belçika", kita: "Avrupa", nufus: 11.7, alan: 30528, kiyi: "Var", komsular: ["Almanya", "Fransa", "Lüksemburg", "Hollanda"] },
+            { ad: "Belize", kita: "Kuzey Amerika", nufus: 0.4, alan: 22966, kiyi: "Var", komsular: ["Guatemala", "Meksika"] },
+            { ad: "Benin", kita: "Afrika", nufus: 13.7, alan: 112622, kiyi: "Var", komsular: ["Burkina Faso", "Nijer", "Nijerya", "Togo"] },
+            { ad: "Belarus", kita: "Avrupa", nufus: 9.2, alan: 207600, kiyi: "Yok", komsular: ["Rusya", "Ukrayna", "Polonya", "Litvanya", "Letonya"] },
+            { ad: "Bhutan", kita: "Asya", nufus: 0.8, alan: 38394, kiyi: "Yok", komsular: ["Çin", "Hindistan"] },
+            { ad: "Birleşik Arap Emirlikleri", kita: "Asya", nufus: 9.5, alan: 83600, kiyi: "Var", komsular: ["Umman", "Suudi Arabistan"] },
+            { ad: "Birleşik Krallık", kita: "Avrupa", nufus: 67.7, alan: 242495, kiyi: "Var", komsular: ["İrlanda"] },
+            { ad: "Bolivya", kita: "Güney Amerika", nufus: 12.4, alan: 1098581, kiyi: "Yok", komsular: ["Arjantin", "Brezilya", "Şili", "Paraguay", "Peru"] },
+            { ad: "Bosna-Hersek", kita: "Avrupa", nufus: 3.2, alan: 51209, kiyi: "Var", komsular: ["Hırvatistan", "Karadağ", "Sırbistan"] },
+            { ad: "Botsvana", kita: "Afrika", nufus: 2.6, alan: 581730, kiyi: "Yok", komsular: ["Namibya", "Güney Afrika", "Zambiya", "Zimbabve"] },
+            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216.4, alan: 8515767, kiyi: "Var", komsular: ["Arjantin", "Bolivya", "Kolombiya", "Gayana", "Paraguay", "Peru", "Surinam", "Uruguay", "Venezuela"] },
+            { ad: "Brunei", kita: "Asya", nufus: 0.4, alan: 5765, kiyi: "Var", komsular: ["Malezya"] },
+            { ad: "Bulgaristan", kita: "Avrupa", nufus: 6.4, alan: 110879, kiyi: "Var", komsular: ["Türkiye", "Yunanistan", "Romanya", "Sırbistan", "Kuzey Makedonya"] },
+            { ad: "Burkina Faso", kita: "Afrika", nufus: 23.3, alan: 272967, kiyi: "Yok", komsular: ["Benin", "Fildişi Sahili", "Gana", "Mali", "Nijer", "Togo"] },
+            { ad: "Burundi", kita: "Afrika", nufus: 13.2, alan: 27834, kiyi: "Yok", komsular: ["Kongo Demokratik Cumhuriyeti", "Ruanda", "Tanzanya"] },
+            { ad: "Cezayir", kita: "Afrika", nufus: 45.6, alan: 2381741, kiyi: "Var", komsular: ["Tunus", "Libya", "Nijer", "Mali", "Moritanya", "Fas"] },
+            { ad: "Cibuti", kita: "Afrika", nufus: 1.1, alan: 23200, kiyi: "Var", komsular: ["Eritre", "Etiyopya", "Somali"] },
+            { ad: "Çad", kita: "Afrika", nufus: 18.3, alan: 1284000, kiyi: "Yok", komsular: ["Kamerun", "Orta Afrika Cumhuriyeti", "Libya", "Nijer", "Nijerya", "Sudan"] },
+            { ad: "Çekya", kita: "Avrupa", nufus: 10.8, alan: 78866, kiyi: "Yok", komsular: ["Avusturya", "Almanya", "Polonya", "Slovakya"] },
+            { ad: "Çin", kita: "Asya", nufus: 1409.0, alan: 9596961, kiyi: "Var", komsular: ["Rusya", "Moğolistan", "Kuzey Kore", "Kazakistan", "Kırgızistan", "Tacikistan", "Afganistan", "Pakistan", "Hindistan", "Nepal", "Butan", "Myanmar", "Laos", "Vietnam"] },
+            { ad: "Danimarka", kita: "Avrupa", nufus: 5.9, alan: 43094, kiyi: "Var", komsular: ["Almanya"] },
+            { ad: "Doğu Timor", kita: "Asya", nufus: 1.3, alan: 14874, kiyi: "Var", komsular: ["Endonezya"] },
+            { ad: "Dominik Cumhuriyeti", kita: "Kuzey Amerika", nufus: 11.3, alan: 48671, kiyi: "Var", komsular: ["Haiti"] },
+            { ad: "Dominika", kita: "Kuzey Amerika", nufus: 0.07, alan: 751, kiyi: "Var", komsular: [] },
+            { ad: "Ekvador", kita: "Güney Amerika", nufus: 18.2, alan: 256370, kiyi: "Var", komsular: ["Kolombiya", "Peru"] },
+            { ad: "Ekvator Ginesi", kita: "Afrika", nufus: 1.7, alan: 28051, kiyi: "Var", komsular: ["Kamerun", "Gabon"] },
+            { ad: "El Salvador", kita: "Kuzey Amerika", nufus: 6.3, alan: 21041, kiyi: "Var", komsular: ["Guatemala", "Honduras"] },
+            { ad: "Endonezya", kita: "Asya", nufus: 277.5, alan: 1904569, kiyi: "Var", komsular: ["Malezya", "Papua Yeni Gine", "Doğu Timor"] },
+            { ad: "Eritre", kita: "Afrika", nufus: 3.7, alan: 117600, kiyi: "Var", komsular: ["Cibuti", "Etiyopya", "Sudan"] },
+            { ad: "Ermenistan", kita: "Asya", nufus: 2.7, alan: 29743, kiyi: "Yok", komsular: ["Azerbaycan", "Gürcistan", "İran", "Türkiye"] },
+            { ad: "Estonya", kita: "Avrupa", nufus: 1.3, alan: 45227, kiyi: "Var", komsular: ["Letonya", "Rusya"] },
+            { ad: "Esvatini", kita: "Afrika", nufus: 1.2, alan: 17364, kiyi: "Yok", komsular: ["Mozambik", "Güney Afrika"] },
+            { ad: "Etiyopya", kita: "Afrika", nufus: 126.5, alan: 1104300, kiyi: "Yok", komsular: ["Cibuti", "Eritre", "Kenya", "Somali", "Güney Sudan", "Sudan"] },
+            { ad: "Fas", kita: "Afrika", nufus: 37.8, alan: 446550, kiyi: "Var", komsular: ["Cezayir", "İspanya"] },
+            { ad: "Fiji", kita: "Okyanusya", nufus: 0.9, alan: 18274, kiyi: "Var", komsular: [] },
+            { ad: "Fildişi Sahili", kita: "Afrika", nufus: 28.9, alan: 322463, kiyi: "Var", komsular: ["Burkina Faso", "Gana", "Gine", "Liberya", "Mali"] },
+            { ad: "Filipinler", kita: "Asya", nufus: 117.3, alan: 300000, kiyi: "Var", komsular: [] },
+            { ad: "Filistin", kita: "Asya", nufus: 5.2, alan: 6020, kiyi: "Var", komsular: ["İsrail", "Ürdün", "Mısır"] },
+            { ad: "Finlandiya", kita: "Avrupa", nufus: 5.6, alan: 338424, kiyi: "Var", komsular: ["İsveç", "Norveç", "Rusya"] },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "Belçika", "Lüksemburg", "İsviçre", "İtalya", "İspanya", "Andorra", "Monako"] },
+            { ad: "Gabon", kita: "Afrika", nufus: 2.4, alan: 267668, kiyi: "Var", komsular: ["Kamerun", "Kongo Cumhuriyeti", "Ekvator Ginesi"] },
+            { ad: "Gambia", kita: "Afrika", nufus: 2.7, alan: 10689, kiyi: "Var", komsular: ["Senegal"] },
+            { ad: "Gana", kita: "Afrika", nufus: 34.1, alan: 238533, kiyi: "Var", komsular: ["Burkina Faso", "Fildişi Sahili", "Togo"] },
+            { ad: "Gayana", kita: "Güney Amerika", nufus: 0.8, alan: 214969, kiyi: "Var", komsular: ["Brezilya", "Surinam", "Venezuela"] },
+            { ad: "Gine", kita: "Afrika", nufus: 14.2, alan: 245857, kiyi: "Var", komsular: ["Fildişi Sahili", "Gine-Bissau", "Liberya", "Mali", "Senegal", "Sierra Leone"] },
+            { ad: "Gine-Bissau", kita: "Afrika", nufus: 2.1, alan: 36125, kiyi: "Var", komsular: ["Gine", "Senegal"] },
+            { ad: "Grenada", kita: "Kuzey Amerika", nufus: 0.12, alan: 344, kiyi: "Var", komsular: [] },
+            { ad: "Guatemala", kita: "Kuzey Amerika", nufus: 18.0, alan: 108889, kiyi: "Var", komsular: ["Belize", "El Salvador", "Honduras", "Meksika"] },
+            { ad: "Güney Afrika", kita: "Afrika", nufus: 60.4, alan: 1221037, kiyi: "Var", komsular: ["Botsvana", "Lesotho", "Mozambik", "Namibya", "Esvatini", "Zimbabve"] },
+            { ad: "Güney Kore", kita: "Asya", nufus: 51.7, alan: 100210, kiyi: "Var", komsular: ["Kuzey Kore"] },
+            { ad: "Güney Sudan", kita: "Afrika", nufus: 11.1, alan: 619745, kiyi: "Yok", komsular: ["Orta Afrika Cumhuriyeti", "Kongo Demokratik Cumhuriyeti", "Etiyopya", "Kenya", "Sudan", "Uganda"] },
+            { ad: "Gürcistan", kita: "Asya", nufus: 3.7, alan: 69700, kiyi: "Var", komsular: ["Ermenistan", "Azerbaycan", "Rusya", "Türkiye"] },
+            { ad: "Haiti", kita: "Kuzey Amerika", nufus: 11.7, alan: 27750, kiyi: "Var", komsular: ["Dominik Cumhuriyeti"] },
+            { ad: "Hırvatistan", kita: "Avrupa", nufus: 3.8, alan: 56594, kiyi: "Var", komsular: ["Bosna-Hersek", "Macaristan", "Karadağ", "Sırbistan", "Slovenya"] },
+            { ad: "Hindistan", kita: "Asya", nufus: 1428.0, alan: 3287263, kiyi: "Var", komsular: ["Pakistan", "Çin", "Nepal", "Butan", "Bangladeş", "Myanmar"] },
+            { ad: "Hollanda", kita: "Avrupa", nufus: 17.8, alan: 41543, kiyi: "Var", komsular: ["Almanya", "Belçika"] },
+            { ad: "Honduras", kita: "Kuzey Amerika", nufus: 10.6, alan: 112492, kiyi: "Var", komsular: ["Guatemala", "El Salvador", "Nikaragua"] },
+            { ad: "Irak", kita: "Asya", nufus: 45.5, alan: 438317, kiyi: "Var", komsular: ["Türkiye", "Suriye", "Ürdün", "Suudi Arabistan", "Kuveyt", "İran"] },
+            { ad: "İran", kita: "Asya", nufus: 89.2, alan: 1648195, kiyi: "Var", komsular: ["Türkiye", "Irak", "Pakistan", "Afganistan", "Türkmenistan", "Ermenistan", "Azerbaycan"] },
+            { ad: "İrlanda", kita: "Avrupa", nufus: 5.1, alan: 70273, kiyi: "Var", komsular: ["Birleşik Krallık"] },
+            { ad: "İspanya", kita: "Avrupa", nufus: 48.1, alan: 505990, kiyi: "Var", komsular: ["Portekiz", "Fransa", "Andorra", "Fas"] },
+            { ad: "İsrail", kita: "Asya", nufus: 9.8, alan: 20770, kiyi: "Var", komsular: ["Mısır", "Ürdün", "Lübnan", "Suriye", "Filistin"] },
+            { ad: "İsveç", kita: "Avrupa", nufus: 10.5, alan: 450295, kiyi: "Var", komsular: ["Norveç", "Finlandiya"] },
+            { ad: "İsviçre", kita: "Avrupa", nufus: 8.8, alan: 41285, kiyi: "Yok", komsular: ["Almanya", "Fransa", "İtalya", "Avusturya", "Lihtenştayn"] },
+            { ad: "İtalya", kita: "Avrupa", nufus: 58.9, alan: 301340, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Slovenya", "San Marino", "Vatikan"] },
+            { ad: "İzlanda", kita: "Avrupa", nufus: 0.4, alan: 103000, kiyi: "Var", komsular: [] },
+            { ad: "Jamaika", kita: "Kuzey Amerika", nufus: 2.8, alan: 10991, kiyi: "Var", komsular: [] },
+            { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var", komsular: [] },
+            { ad: "Kamboçya", kita: "Asya", nufus: 16.9, alan: 181035, kiyi: "Var", komsular: ["Laos", "Tayland", "Vietnam"] },
+            { ad: "Kamerun", kita: "Afrika", nufus: 28.6, alan: 475442, kiyi: "Var", komsular: ["Orta Afrika Cumhuriyeti", "Çad", "Kongo Cumhuriyeti", "Ekvator Ginesi", "Gabon", "Nijerya"] },
+            { ad: "Kanada", kita: "Kuzey Amerika", nufus: 38.7, alan: 9984670, kiyi: "Var", komsular: ["Amerika Birleşik Devletleri"] },
+            { ad: "Karadağ", kita: "Avrupa", nufus: 0.6, alan: 13812, kiyi: "Var", komsular: ["Arnavutluk", "Bosna-Hersek", "Hırvatistan", "Sırbistan"] },
+            { ad: "Katar", kita: "Asya", nufus: 2.7, alan: 11586, kiyi: "Var", komsular: ["Suudi Arabistan"] },
+            { ad: "Kazakistan", kita: "Asya", nufus: 19.9, alan: 2724900, kiyi: "Yok", komsular: ["Rusya", "Çin", "Kırgızistan", "Özbekistan", "Türkmenistan"] },
+            { ad: "Kenya", kita: "Afrika", nufus: 55.1, alan: 580367, kiyi: "Var", komsular: ["Etiyopya", "Somali", "Güney Sudan", "Tanzanya", "Uganda"] },
+            { ad: "Kırgızistan", kita: "Asya", nufus: 7.0, alan: 199951, kiyi: "Yok", komsular: ["Çin", "Kazakistan", "Tacikistan", "Özbekistan"] },
+            { ad: "Kiri̇bati̇", kita: "Okyanusya", nufus: 0.13, alan: 811, kiyi: "Var", komsular: [] },
+            { ad: "Kolombiya", kita: "Güney Amerika", nufus: 52.0, alan: 1141748, kiyi: "Var", komsular: ["Brezilya", "Ekvador", "Panama", "Peru", "Venezuela"] },
+            { ad: "Komorlar", kita: "Afrika", nufus: 0.8, alan: 2235, kiyi: "Var", komsular: [] },
+            { ad: "Kongo Cumhuriyeti", kita: "Afrika", nufus: 6.1, alan: 342000, kiyi: "Var", komsular: ["Angola", "Kamerun", "Orta Afrika Cumhuriyeti", "Kongo Demokratik Cumhuriyeti", "Gabon"] },
+            { ad: "Kongo Demokratik Cumhuriyeti", kita: "Afrika", nufus: 102.3, alan: 2344858, kiyi: "Var", komsular: ["Angola", "Burundi", "Orta Afrika Cumhuriyeti", "Kongo Cumhuriyeti", "Ruanda", "Güney Sudan", "Tanzanya", "Zambiya"] },
+            { ad: "Kosta Rika", kita: "Kuzey Amerika", nufus: 5.2, alan: 51100, kiyi: "Var", komsular: ["Nikaragua", "Panama"] },
+            { ad: "Kuveyt", kita: "Asya", nufus: 4.3, alan: 17818, kiyi: "Var", komsular: ["Irak", "Suudi Arabistan"] },
+            { ad: "Kuzey Kore", kita: "Asya", nufus: 26.1, alan: 120538, kiyi: "Var", komsular: ["Çin", "Güney Kore", "Rusya"] },
+            { ad: "Kuzey Makedonya", kita: "Avrupa", nufus: 2.0, alan: 25713, kiyi: "Yok", komsular: ["Arnavutluk", "Bulgaristan", "Yunanistan", "Sırbistan"] },
+            { ad: "Küba", kita: "Kuzey Amerika", nufus: 11.2, alan: 109884, kiyi: "Var", komsular: [] },
+            { ad: "Laos", kita: "Asya", nufus: 7.6, alan: 236800, kiyi: "Yok", komsular: ["Kamboçya", "Çin", "Myanmar", "Tayland", "Vietnam"] },
+            { ad: "Lesotho", kita: "Afrika", nufus: 2.3, alan: 30355, kiyi: "Yok", komsular: ["Güney Afrika"] },
+            { ad: "Letonya", kita: "Avrupa", nufus: 1.8, alan: 64589, kiyi: "Var", komsular: ["Belarus", "Estonya", "Litvanya", "Rusya"] },
+            { ad: "Liberya", kita: "Afrika", nufus: 5.4, alan: 111369, kiyi: "Var", komsular: ["Fildişi Sahili", "Gine", "Sierra Leone"] },
+            { ad: "Libya", kita: "Afrika", nufus: 6.8, alan: 1759540, kiyi: "Var", komsular: ["Mısır", "Sudan", "Çad", "Nijer", "Cezayir", "Tunus"] },
+            { ad: "Lihtenştayn", kita: "Avrupa", nufus: 0.04, alan: 160, kiyi: "Yok", komsular: ["Avusturya", "İsviçre"] },
+            { ad: "Litvanya", kita: "Avrupa", nufus: 2.8, alan: 65300, kiyi: "Var", komsular: ["Belarus", "Letonya", "Polonya", "Rusya"] },
+            { ad: "Lübnan", kita: "Asya", nufus: 5.3, alan: 10452, kiyi: "Var", komsular: ["İsrail", "Suriye"] },
+            { ad: "Lüksemburg", kita: "Avrupa", nufus: 0.6, alan: 2586, kiyi: "Yok", komsular: ["Belçika", "Fransa", "Almanya"] },
+            { ad: "Madagaskar", kita: "Afrika", nufus: 30.3, alan: 587041, kiyi: "Var", komsular: [] },
+            { ad: "Macaristan", kita: "Avrupa", nufus: 9.6, alan: 93028, kiyi: "Yok", komsular: ["Avusturya", "Hırvatistan", "Romanya", "Sırbistan", "Slovakya", "Slovenya", "Ukrayna"] },
+            { ad: "Malavi", kita: "Afrika", nufus: 20.9, alan: 118484, kiyi: "Yok", komsular: ["Mozambik", "Tanzanya", "Zambiya"] },
+            { ad: "Maldivler", kita: "Asya", nufus: 0.5, alan: 300, kiyi: "Var", komsular: [] },
+            { ad: "Malezya", kita: "Asya", nufus: 34.3, alan: 330803, kiyi: "Var", komsular: ["Tayland", "Endonezya", "Brunei"] },
+            { ad: "Mali", kita: "Afrika", nufus: 23.2, alan: 1240192, kiyi: "Yok", komsular: ["Cezayir", "Burkina Faso", "Fildişi Sahili", "Gine", "Moritanya", "Nijer", "Senegal"] },
+            { ad: "Malta", kita: "Avrupa", nufus: 0.5, alan: 316, kiyi: "Var", komsular: [] },
+            { ad: "Marshall Adaları", kita: "Okyanusya", nufus: 0.04, alan: 181, kiyi: "Var", komsular: [] },
+            { ad: "Mauritius", kita: "Afrika", nufus: 1.3, alan: 2040, kiyi: "Var", komsular: [] },
+            { ad: "Meksika", kita: "Kuzey Amerika", nufus: 128.4, alan: 1964375, kiyi: "Var", komsular: ["Amerika Birleşik Devletleri", "Guatemala", "Belize"] },
+            { ad: "Mısır", kita: "Afrika", nufus: 112.7, alan: 1002450, kiyi: "Var", komsular: ["İsrail", "Libya", "Sudan", "Filistin"] },
+            { ad: "Mikronezya Federal Devletleri", kita: "Okyanusya", nufus: 0.1, alan: 702, kiyi: "Var", komsular: [] },
+            { ad: "Moldova", kita: "Avrupa", nufus: 2.5, alan: 33846, kiyi: "Yok", komsular: ["Romanya", "Ukrayna"] },
+            { ad: "Monako", kita: "Avrupa", nufus: 0.04, alan: 2, kiyi: "Var", komsular: ["Fransa"] },
+            { ad: "Moğolistan", kita: "Asya", nufus: 3.4, alan: 1564116, kiyi: "Yok", komsular: ["Çin", "Rusya"] },
+            { ad: "Mozambik", kita: "Afrika", nufus: 33.8, alan: 801590, kiyi: "Var", komsular: ["Malavi", "Güney Afrika", "Esvatini", "Tanzanya", "Zambiya", "Zimbabve"] },
+            { ad: "Myanmar", kita: "Asya", nufus: 54.2, alan: 676578, kiyi: "Var", komsular: ["Bangladeş", "Çin", "Hindistan", "Laos", "Tayland"] },
+            { ad: "Namibya", kita: "Afrika", nufus: 2.6, alan: 825615, kiyi: "Var", komsular: ["Angola", "Botsvana", "Güney Afrika", "Zambiya"] },
+            { ad: "Nauru", kita: "Okyanusya", nufus: 0.01, alan: 21, kiyi: "Var", komsular: [] },
+            { ad: "Nepal", kita: "Asya", nufus: 30.8, alan: 147181, kiyi: "Yok", komsular: ["Çin", "Hindistan"] },
+            { ad: "Nikaragua", kita: "Kuzey Amerika", nufus: 7.0, alan: 130373, kiyi: "Var", komsular: ["Honduras", "Kosta Rika"] },
+            { ad: "Nijer", kita: "Afrika", nufus: 27.2, alan: 1267000, kiyi: "Yok", komsular: ["Cezayir", "Benin", "Burkina Faso", "Çad", "Libya", "Mali", "Nijerya"] },
+            { ad: "Nijerya", kita: "Afrika", nufus: 224.0, alan: 923768, kiyi: "Var", komsular: ["Benin", "Kamerun", "Çad", "Nijer"] },
+            { ad: "Norveç", kita: "Avrupa", nufus: 5.5, alan: 323802, kiyi: "Var", komsular: ["İsveç", "Finlandiya", "Rusya"] },
+            { ad: "Yeni Zelanda", kita: "Okyanusya", nufus: 5.2, alan: 268021, kiyi: "Var", komsular: [] },
+            { ad: "Umman", kita: "Asya", nufus: 4.6, alan: 309500, kiyi: "Var", komsular: ["Suudi Arabistan", "Birleşik Arap Emirlikleri", "Yemen"] },
+            { ad: "Pakistan", kita: "Asya", nufus: 240.5, alan: 881913, kiyi: "Var", komsular: ["İran", "Afganistan", "Çin", "Hindistan"] },
+            { ad: "Palau", kita: "Okyanusya", nufus: 0.02, alan: 459, kiyi: "Var", komsular: [] },
+            { ad: "Panama", kita: "Kuzey Amerika", nufus: 4.5, alan: 75420, kiyi: "Var", komsular: ["Kolombiya", "Kosta Rika"] },
+            { ad: "Papua Yeni Gine", kita: "Okyanusya", nufus: 10.3, alan: 462840, kiyi: "Var", komsular: ["Endonezya"] },
+            { ad: "Paraguay", kita: "Güney Amerika", nufus: 6.8, alan: 406752, kiyi: "Yok", komsular: ["Arjantin", "Bolivya", "Brezilya"] },
+            { ad: "Peru", kita: "Güney Amerika", nufus: 34.3, alan: 1285216, kiyi: "Var", komsular: ["Bolivya", "Brezilya", "Şili", "Kolombiya", "Ekvador"] },
+            { ad: "Polonya", kita: "Avrupa", nufus: 36.7, alan: 312696, kiyi: "Var", komsular: ["Almanya", "Çekya", "Slovakya", "Ukrayna", "Belarus", "Litvanya", "Rusya"] },
+            { ad: "Portekiz", kita: "Avrupa", nufus: 10.4, alan: 92212, kiyi: "Var", komsular: ["İspanya"] },
+            { ad: "Romanya", kita: "Avrupa", nufus: 19.0, alan: 238391, kiyi: "Var", komsular: ["Bulgaristan", "Macaristan", "Moldova", "Sırbistan", "Ukrayna"] },
+            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Norveç", "Finlandiya", "Estonya", "Letonya", "Litvanya", "Polonya", "Belarus", "Ukrayna", "Gürcistan", "Azerbaycan", "Kazakistan", "Çin", "Moğolistan", "Kuzey Kore"] },
+            { ad: "Ruanda", kita: "Afrika", nufus: 14.0, alan: 26338, kiyi: "Yok", komsular: ["Burundi", "Kongo Demokratik Cumhuriyeti", "Tanzanya", "Uganda"] },
+            { ad: "Saint Kitts ve Nevis", kita: "Kuzey Amerika", nufus: 0.05, alan: 261, kiyi: "Var", komsular: [] },
+            { ad: "Saint Lucia", kita: "Kuzey Amerika", nufus: 0.18, alan: 616, kiyi: "Var", komsular: [] },
+            { ad: "Saint Vincent ve Grenadinler", kita: "Kuzey Amerika", nufus: 0.1, alan: 389, kiyi: "Var", komsular: [] },
+            { ad: "Samoa", kita: "Okyanusya", nufus: 0.2, alan: 2831, kiyi: "Var", komsular: [] },
+            { ad: "San Marino", kita: "Avrupa", nufus: 0.03, alan: 61, kiyi: "Yok", komsular: ["İtalya"] },
+            { ad: "Sao Tome ve Principe", kita: "Afrika", nufus: 0.23, alan: 964, kiyi: "Var", komsular: [] },
+            { ad: "Suudi Arabistan", kita: "Asya", nufus: 36.9, alan: 2149690, kiyi: "Var", komsular: ["Irak", "Ürdün", "Kuveyt", "Umman", "Katar", "Birleşik Arap Emirlikleri", "Yemen"] },
+            { ad: "Senegal", kita: "Afrika", nufus: 17.7, alan: 196722, kiyi: "Var", komsular: ["Gambia", "Gine", "Gine-Bissau", "Mali", "Moritanya"] },
+            { ad: "Sırbistan", kita: "Avrupa", nufus: 6.6, alan: 88361, kiyi: "Yok", komsular: ["Bosna-Hersek", "Bulgaristan", "Hırvatistan", "Macaristan", "Kuzey Makedonya", "Karadağ", "Romanya", "Arnavutluk"] },
+            { ad: "Seyşeller", kita: "Afrika", nufus: 0.1, alan: 452, kiyi: "Var", komsular: [] },
+            { ad: "Sierra Leone", kita: "Afrika", nufus: 8.7, alan: 71740, kiyi: "Var", komsular: ["Gine", "Liberya"] },
+            { ad: "Singapur", kita: "Asya", nufus: 5.9, alan: 719, kiyi: "Var", komsular: [] },
+            { ad: "Slovakya", kita: "Avrupa", nufus: 5.4, alan: 49037, kiyi: "Yok", komsular: ["Avusturya", "Çekya", "Macaristan", "Polonya", "Ukrayna"] },
+            { ad: "Slovenya", kita: "Avrupa", nufus: 2.1, alan: 20273, kiyi: "Var", komsular: ["Avusturya", "Hırvatistan", "İtalya", "Macaristan"] },
+            { ad: "Solomon Adaları", kita: "Okyanusya", nufus: 0.7, alan: 28896, kiyi: "Var", komsular: [] },
+            { ad: "Somali", kita: "Afrika", nufus: 18.1, alan: 637657, kiyi: "Var", komsular: ["Cibuti", "Etiyopya", "Kenya"] },
+            { ad: "Sri Lanka", kita: "Asya", nufus: 21.8, alan: 65610, kiyi: "Var", komsular: [] },
+            { ad: "Sudan", kita: "Afrika", nufus: 48.1, alan: 1861484, kiyi: "Var", komsular: ["Orta Afrika Cumhuriyeti", "Çad", "Mısır", "Eritre", "Etiyopya", "Libya", "Güney Sudan"] },
+            { ad: "Surinam", kita: "Güney Amerika", nufus: 0.6, alan: 163820, kiyi: "Var", komsular: ["Brezilya", "Gayana", "Fransa"] },
+            { ad: "Suriye", kita: "Asya", nufus: 23.2, alan: 185180, kiyi: "Var", komsular: ["Türkiye", "Lübnan", "İsrail", "Ürdün", "Irak"] },
+            { ad: "Tacikistan", kita: "Asya", nufus: 10.1, alan: 143100, kiyi: "Yok", komsular: ["Afganistan", "Çin", "Kırgızistan", "Özbekistan"] },
+            { ad: "Tanzanya", kita: "Afrika", nufus: 67.4, alan: 947303, kiyi: "Var", komsular: ["Burundi", "Kongo Demokratik Cumhuriyeti", "Kenya", "Malavi", "Mozambik", "Ruanda", "Uganda", "Zambiya"] },
+            { ad: "Tayland", kita: "Asya", nufus: 71.8, alan: 513120, kiyi: "Var", komsular: ["Kamboçya", "Laos", "Myanmar", "Malezya"] },
+            { ad: "Togo", kita: "Afrika", nufus: 9.0, alan: 56785, kiyi: "Var", komsular: ["Benin", "Burkina Faso", "Gana"] },
+            { ad: "Tonga", kita: "Okyanusya", nufus: 0.1, alan: 747, kiyi: "Var", komsular: [] },
+            { ad: "Trinidad ve Tobago", kita: "Kuzey Amerika", nufus: 1.5, alan: 5130, kiyi: "Var", komsular: [] },
+            { ad: "Tunus", kita: "Afrika", nufus: 12.4, alan: 163610, kiyi: "Var", komsular: ["Cezayir", "Libya"] },
+            { ad: "Türkiye", kita: "Avrupa", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
+            { ad: "Türkmenistan", kita: "Asya", nufus: 6.5, alan: 488100, kiyi: "Yok", komsular: ["Afganistan", "İran", "Kazakistan", "Özbekistan"] },
+            { ad: "Tuvalu", kita: "Okyanusya", nufus: 0.01, alan: 26, kiyi: "Var", komsular: [] },
+            { ad: "Uganda", kita: "Afrika", nufus: 48.5, alan: 241038, kiyi: "Yok", komsular: ["Kongo Demokratik Cumhuriyeti", "Kenya", "Ruanda", "Güney Sudan", "Tanzanya"] },
+            { ad: "Ukrayna", kita: "Avrupa", nufus: 38.0, alan: 603550, kiyi: "Var", komsular: ["Belarus", "Macaristan", "Moldova", "Polonya", "Romanya", "Rusya", "Slovakya"] },
+            { ad: "Uruguay", kita: "Güney Amerika", nufus: 3.4, alan: 176215, kiyi: "Var", komsular: ["Arjantin", "Brezilya"] },
+            { ad: "Özbekistan", kita: "Asya", nufus: 36.4, alan: 447400, kiyi: "Yok", komsular: ["Afganistan", "Kazakistan", "Kırgızistan", "Tacikistan", "Türkmenistan"] },
+            { ad: "Vanuatu", kita: "Okyanusya", nufus: 0.3, alan: 12189, kiyi: "Var", komsular: [] },
+            { ad: "Vatikan", kita: "Avrupa", nufus: 0.001, alan: 0.49, kiyi: "Yok", komsular: ["İtalya"] },
+            { ad: "Venezuela", kita: "Güney Amerika", nufus: 28.8, alan: 916445, kiyi: "Var", komsular: ["Brezilya", "Kolombiya", "Gayana"] },
+            { ad: "Vietnam", kita: "Asya", nufus: 98.8, alan: 331212, kiyi: "Var", komsular: ["Kamboçya", "Laos", "Çin"] },
+            { ad: "Yemen", kita: "Asya", nufus: 34.4, alan: 527968, kiyi: "Var", komsular: ["Umman", "Suudi Arabistan"] },
+            { ad: "Yunanistan", kita: "Avrupa", nufus: 10.4, alan: 131957, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Kuzey Makedonya", "Arnavutluk"] },
+            { ad: "Zambiya", kita: "Afrika", nufus: 20.5, alan: 752618, kiyi: "Yok", komsular: ["Angola", "Botsvana", "Kongo Demokratik Cumhuriyeti", "Malavi", "Mozambik", "Namibya", "Tanzanya", "Zimbabve"] },
+            { ad: "Zimbabve", kita: "Afrika", nufus: 16.6, alan: 390757, kiyi: "Yok", komsular: ["Botsvana", "Mozambik", "Güney Afrika", "Zambiya"] }
+        ];
+
+        countryDB.sort((a, b) => a.ad.localeCompare(b.ad));
+        let targetCountry = null;
+
+        function startNewGame() {
+            targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)];
+            console.log("Gizli Ülke (Hile):", targetCountry.ad);
+            document.getElementById("historyRows").innerHTML = "";
+            document.getElementById("winScreen").style.display = "none";
+            document.getElementById("inputSection").style.display = "flex";
+            document.getElementById("countryInput").value = "";
+        }
+
+        const input = document.getElementById("countryInput");
+        const suggestionsList = document.getElementById("suggestions");
+
+        input.addEventListener("input", function() {
+            const value = this.value.trim().toLowerCase();
+            suggestionsList.innerHTML = "";
+            if (!value) { suggestionsList.style.display = "none"; return; }
+            const filtered = countryDB.filter(c => c.ad.toLowerCase().includes(value));
+            filtered.forEach(country => {
+                const li = document.createElement("li");
+                li.textContent = country.ad;
+                li.addEventListener("click", function() { input.value = country.ad; suggestionsList.style.display = "none"; });
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = "block";
+        });
+
+        document.addEventListener("click", function(e) {
+            if (e.target !== input && e.target !== suggestionsList) {
+                suggestionsList.style.display = "none";
+            }
+        });
+
+        function submitGuess() {
+            const guessName = input.value.trim();
+            const guess = countryDB.find(c => c.ad.toLowerCase() === guessName.toLowerCase());
+            if (!guess) { alert("Lütfen listeden geçerli bir ülke seçin!"); return; }
+
+            const history = document.getElementById("historyRows");
+            history.appendChild(createCell(guess.ad, guess.ad === targetCountry.ad));
+            history.appendChild(createCell(guess.kita, guess.kita === targetCountry.kita));
+
+            let popArrow = guess.nufus < targetCountry.nufus ? "⬆️" : (guess.nufus > targetCountry.nufus ? "⬇️" : "");
+            history.appendChild(createCell(`${guess.nufus} Milyon`, guess.nufus === targetCountry.nufus, popArrow));
+
+            let areaArrow = guess.alan < targetCountry.alan ? "⬆️" : (guess.alan > targetCountry.alan ? "⬇️" : "");
+            history.appendChild(createCell(`${guess.alan.toLocaleString()} km²`, guess.alan === targetCountry.alan, areaArrow));
+
+            history.appendChild(createCell(`Kıyı: ${guess.kiyi}`, guess.kiyi === targetCountry.kiyi));
+
+            if (guess.ad === targetCountry.ad) {
+                history.appendChild(createCell("Hedef Ülke", true));
+                document.getElementById("winScreen").style.display = "block";
+                document.getElementById("inputSection").style.display = "none";
+            } else {
+                const komsuMu = guess.komsular.includes(targetCountry.ad) || targetCountry.komsular.includes(guess.ad);
+                history.appendChild(createCell(komsuMu ? "Komşu 👍" : "Komşu Değil ❌", komsuMu));
+            }
+            input.value = "";
+            suggestionsList.style.display = "none";
+        }
+
+        function createCell(text, isMatch, subText = "") {
+            const cell = document.createElement("div");
+            cell.className = `cell ${isMatch ? 'match' : 'mismatch'}`;
+            cell.textContent = text;
+            if (subText) {
+                const sub = document.createElement("div");
+                sub.className = "arrow-box";
+                sub.textContent = subText;
+                cell.appendChild(sub);
+            }
+            return cell;
+        }
+
+        // Oyunu otomatik başlat
+        startNewGame();
+    </script>
+</body>
+</html>
