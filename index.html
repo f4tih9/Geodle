@@ -8,84 +8,100 @@
         :root { --bg-color: #f6f3ea; --text-color: #1e293b; --card-border: #000000; --correct: #10b981; --wrong: #ef4444; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .logo { font-size: 24px; font-weight: bold; cursor: pointer; user-select: none; }
-        .nav-profile { display: flex; align-items: center; gap: 15px; }
-        .profile-btn { background: white; border: 2px solid var(--card-border); padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 2px 2px 0px var(--card-border); }
-        .container { width: 100%; max-width: 1200px; padding: 20px; display: flex; flex-direction: column; align-items: center; flex: 1; }
-        #homeScreen { width: 100%; display: flex; flex-direction: column; }
-        h2 { font-size: 24px; margin-bottom: 25px; align-self: flex-start; }
-        .game-selection-area { width: 100%; display: flex; justify-content: flex-start; margin-bottom: 40px; }
-        .game-card { border: 3px solid var(--card-border); border-radius: 18px; padding: 30px 40px; text-align: center; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 5px 5px 0px var(--card-border); background-color: #50fa7b; width: 280px; min-height: 160px; box-sizing: border-box; }
-        #geodleScreen { display: none; width: 100%; max-width: 800px; flex-direction: column; align-items: center; margin-top: 30px; }
-        .controls { display: flex; gap: 12px; margin-bottom: 25px; position: relative; width: 100%; }
-        .search-container { position: relative; flex: 1; }
-        #countryInput { width: 100%; padding: 14px; font-size: 16px; border-radius: 8px; border: 2px solid var(--card-border); }
-        .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--card-border); max-height: 200px; overflow-y: auto; z-index: 10; list-style: none; padding: 0; margin: 0; border-radius: 8px; }
-        .suggestions-list li { padding: 12px; cursor: pointer; color: black; }
-        .suggestions-list li:hover { background: #e2e8f0; }
-        .btn-guess { padding: 14px 28px; background: #2563eb; color: white; font-weight: bold; border: 2px solid var(--card-border); border-radius: 8px; cursor: pointer; }
-        .table-wrapper { overflow-x: auto; width: 100%; }
-        .grid-container { display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 8px; text-align: center; min-width: 600px; }
-        .header-cell { color: #64748b; font-size: 14px; font-weight: bold; padding-bottom: 8px; border-bottom: 2px solid var(--card-border); }
-        .cell { padding: 12px 4px; font-size: 14px; font-weight: bold; border: 2px solid var(--card-border); border-radius: 8px; background: white; color: black; }
-        .match { background-color: var(--correct); color: white; }
-        .mismatch { background-color: var(--wrong); color: white; }
+        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
+        .container { width: 100%; max-width: 800px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* OYUN ALANI DÜZELTMELERİ */
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 8px; 
+            width: 100%; 
+            margin-top: 10px; 
+        }
+        .header-cell { color: #64748b; font-size: 13px; font-weight: bold; padding: 10px 0; text-align: center; border-bottom: 2px solid var(--card-border); }
+        .cell { 
+            padding: 10px 5px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            border: 2px solid var(--card-border); 
+            border-radius: 6px; 
+            background: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 50px; 
+        }
+        .match { background-color: var(--correct) !important; color: white !important; }
+        .mismatch { background-color: var(--wrong) !important; color: white !important; }
+        
+        #geodleScreen { display: none; width: 100%; }
+        .controls { display: flex; gap: 10px; width: 100%; margin-bottom: 20px; }
+        #countryInput { flex: 1; padding: 12px; border: 2px solid var(--card-border); border-radius: 6px; }
+        .btn-guess { padding: 10px 20px; background: #2563eb; color: white; border: 2px solid var(--card-border); cursor: pointer; border-radius: 6px; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <div class="navbar">
-        <div class="logo" onclick="showHome()">🌍 Geotrivia</div>
-        <div class="nav-profile"><span id="userGreeting">Misafir</span><button class="profile-btn" onclick="manageProfile()" id="profileBtn">Profil</button></div>
+        <div class="logo" onclick="location.reload()">🌍 Geotrivia</div>
     </div>
+
     <div class="container">
         <div id="homeScreen">
             <h2>Günlük Oyunlar</h2>
-            <div class="game-selection-area"><div class="game-card" onclick="showGeodle()">🟩 Geodle</div></div>
+            <div onclick="showGeodle()" style="border:3px solid #000; padding:30px; background:#50fa7b; cursor:pointer; font-weight:bold; border-radius:18px;">🟩 Geodle</div>
         </div>
+
         <div id="geodleScreen">
-            <div class="controls" id="inputSection">
-                <div class="search-container"><input type="text" id="countryInput" placeholder="Ülke gir..." autocomplete="off"><ul class="suggestions-list" id="suggestions"></ul></div>
+            <div class="controls">
+                <input type="text" id="countryInput" placeholder="Ülke adı gir...">
                 <button class="btn-guess" onclick="submitGuess()">Tahmin</button>
             </div>
-            <div class="table-wrapper"><div class="grid-container" id="historyRows"></div></div>
+            
+            <!-- Başlıklar ve Satırlar aynı grid yapısında birleşti -->
+            <div class="grid-layout" id="gameGrid">
+                <div class="header-cell">Ülke</div>
+                <div class="header-cell">Kıta</div>
+                <div class="header-cell">Nüfus</div>
+                <div class="header-cell">Alan</div>
+                <div class="header-cell">Kıyı</div>
+                <div class="header-cell">Komşu</div>
+            </div>
         </div>
     </div>
 
     <script>
         const countryDB = [
             { ad: "Türkiye", kita: "Asya", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
-            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "Polonya", "Avusturya", "Çekya"] },
-            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "İspanya", "İtalya"] },
-            { ad: "İtalya", kita: "Avrupa", nufus: 58.9, alan: 301340, kiyi: "Var", komsular: ["Fransa", "Avusturya"] },
-            { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var", komsular: [] },
-            { ad: "ABD", kita: "Kuzey Amerika", nufus: 339.9, alan: 9833517, kiyi: "Var", komsular: ["Kanada", "Meksika"] },
-            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Çin", "Kazakistan", "Ukrayna"] },
-            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216.4, alan: 8515767, kiyi: "Var", komsular: ["Arjantin", "Peru"] },
-            { ad: "Çin", kita: "Asya", nufus: 1409.0, alan: 9596961, kiyi: "Var", komsular: ["Rusya", "Hindistan"] },
-            { ad: "Mısır", kita: "Afrika", nufus: 112.7, alan: 1002450, kiyi: "Var", komsular: ["Libya", "Sudan"] }
+            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "Polonya", "Avusturya"] },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "İspanya", "İtalya"] }
         ];
 
-        let targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)];
+        let target = countryDB[Math.floor(Math.random() * countryDB.length)];
 
-        function showGeodle() { document.getElementById("homeScreen").style.display = "none"; document.getElementById("geodleScreen").style.display = "flex"; }
-        function showHome() { document.getElementById("geodleScreen").style.display = "none"; document.getElementById("homeScreen").style.display = "flex"; }
-        
+        function showGeodle() { 
+            document.getElementById("homeScreen").style.display = "none"; 
+            document.getElementById("geodleScreen").style.display = "block"; 
+        }
+
         function submitGuess() {
             const input = document.getElementById("countryInput");
             const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
             if (!guess) return alert("Ülke bulunamadı!");
+
+            const grid = document.getElementById("gameGrid");
+            const data = [guess.ad, guess.kita, guess.nufus + " Mn", guess.alan.toLocaleString(), guess.kiyi, guess.komsular.includes(target.ad) ? "Komşu 👍" : "Uzak ❌"];
             
-            const history = document.getElementById("historyRows");
-            [guess.ad, guess.kita, guess.nufus, guess.alan, guess.kiyi, guess.komsular.includes(targetCountry.ad) ? "Komşu" : "Uzak"].forEach((val, i) => {
+            data.forEach((val, i) => {
                 const div = document.createElement("div");
-                div.className = `cell ${ (i === 0 && val === targetCountry.ad) ? 'match' : 'mismatch' }`;
+                div.className = "cell " + ((i === 0 && guess.ad === target.ad) || (i === 1 && guess.kita === target.kita) ? "match" : "mismatch");
                 div.textContent = val;
-                history.appendChild(div);
+                grid.appendChild(div);
             });
             input.value = "";
         }
-
-        // Arama kısmı ve profil sistemi olduğu gibi duruyor...
     </script>
 </body>
 </html>
