@@ -2,106 +2,14 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geotrivia - Coğrafya Oyun Platformu</title>
+    <title>Geotrivia - Ana Menü</title>
     <style>
-        :root { --bg-color: #f6f3ea; --text-color: #1e293b; --card-border: #000000; --correct: #10b981; --wrong: #ef4444; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
-        .container { width: 100%; max-width: 800px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* OYUN ALANI DÜZELTMELERİ */
-        .grid-layout { 
-            display: grid; 
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 8px; 
-            width: 100%; 
-            margin-top: 10px; 
-        }
-        .header-cell { color: #64748b; font-size: 13px; font-weight: bold; padding: 10px 0; text-align: center; border-bottom: 2px solid var(--card-border); }
-        .cell { 
-            padding: 10px 5px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            border: 2px solid var(--card-border); 
-            border-radius: 6px; 
-            background: white; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 50px; 
-        }
-        .match { background-color: var(--correct) !important; color: white !important; }
-        .mismatch { background-color: var(--wrong) !important; color: white !important; }
-        
-        #geodleScreen { display: none; width: 100%; }
-        .controls { display: flex; gap: 10px; width: 100%; margin-bottom: 20px; }
-        #countryInput { flex: 1; padding: 12px; border: 2px solid var(--card-border); border-radius: 6px; }
-        .btn-guess { padding: 10px 20px; background: #2563eb; color: white; border: 2px solid var(--card-border); cursor: pointer; border-radius: 6px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f6f3ea; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
+        .game-card { border: 3px solid #000; padding: 40px; background: #50fa7b; font-weight: bold; font-size: 24px; cursor: pointer; text-decoration: none; color: black; box-shadow: 5px 5px 0 #000; }
     </style>
 </head>
 <body>
-
-    <div class="navbar">
-        <div class="logo" onclick="location.reload()">🌍 Geotrivia</div>
-    </div>
-
-    <div class="container">
-        <div id="homeScreen">
-            <h2>Günlük Oyunlar</h2>
-            <div onclick="showGeodle()" style="border:3px solid #000; padding:30px; background:#50fa7b; cursor:pointer; font-weight:bold; border-radius:18px;">🟩 Geodle</div>
-        </div>
-
-        <div id="geodleScreen">
-            <div class="controls">
-                <input type="text" id="countryInput" placeholder="Ülke adı gir...">
-                <button class="btn-guess" onclick="submitGuess()">Tahmin</button>
-            </div>
-            
-            <!-- Başlıklar ve Satırlar aynı grid yapısında birleşti -->
-            <div class="grid-layout" id="gameGrid">
-                <div class="header-cell">Ülke</div>
-                <div class="header-cell">Kıta</div>
-                <div class="header-cell">Nüfus</div>
-                <div class="header-cell">Alan</div>
-                <div class="header-cell">Kıyı</div>
-                <div class="header-cell">Komşu</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const countryDB = [
-            { ad: "Türkiye", kita: "Asya", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
-            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "Polonya", "Avusturya"] },
-            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "İspanya", "İtalya"] }
-        ];
-
-        let target = countryDB[Math.floor(Math.random() * countryDB.length)];
-
-        function showGeodle() { 
-            document.getElementById("homeScreen").style.display = "none"; 
-            document.getElementById("geodleScreen").style.display = "block"; 
-        }
-
-        function submitGuess() {
-            const input = document.getElementById("countryInput");
-            const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
-            if (!guess) return alert("Ülke bulunamadı!");
-
-            const grid = document.getElementById("gameGrid");
-            const data = [guess.ad, guess.kita, guess.nufus + " Mn", guess.alan.toLocaleString(), guess.kiyi, guess.komsular.includes(target.ad) ? "Komşu 👍" : "Uzak ❌"];
-            
-            data.forEach((val, i) => {
-                const div = document.createElement("div");
-                div.className = "cell " + ((i === 0 && guess.ad === target.ad) || (i === 1 && guess.kita === target.kita) ? "match" : "mismatch");
-                div.textContent = val;
-                grid.appendChild(div);
-            });
-            input.value = "";
-        }
-    </script>
+    <h1>🌍 Geotrivia</h1>
+    <a href="geodle.html" class="game-card">🟩 Geodle Oyna</a>
 </body>
 </html>
