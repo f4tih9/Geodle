@@ -212,7 +212,7 @@
     <script>
         let countryDB = [];
         let targetCountry = null;
-        let codeToNameDictionary = {}; // 3 harfli kodları (TUR) Türkçe isme (Türkiye) çevirecek sözlük
+        let codeToNameDictionary = {};
 
         const continentTranslations = {
             "Europe": "Avrupa", "Asia": "Asya", "Africa": "Afrika",
@@ -222,25 +222,22 @@
 
         async function fetchCountries() {
             try {
-                // cca3 (3 harfli kod) ve borders (sınır komşularının kodları) verilerini de çekiyoruz
                 const response = await fetch("https://restcountries.com/v3.1/all?fields=name,continents,population,area,landlocked,translations,cca3,borders,unMember");
                 const data = await response.json();
 
-                // 1. Aşama: Kod Sözlüğünü Oluştur ve Ülkeleri Filtrele (Sadece Resmi BM Üyeleri ve Önemli Ülkeler)
                 const filteredData = data.filter(item => item.unMember || item.translations?.tur?.common === "Filistin" || item.translations?.tur?.common === "Vatikan");
 
                 filteredData.forEach(item => {
                     let turkceAd = item.translations?.tur?.common || item.name.common;
-                    codeToNameDictionary[item.cca3] = turkceAd; // Örn: codeToNameDictionary["TUR"] = "Türkiye"
+                    codeToNameDictionary[item.cca3] = turkceAd;
                 });
 
-                // 2. Aşama: Ülke Veritabanını İnşa Et
                 countryDB = filteredData.map(item => {
                     let turkceAd = item.translations?.tur?.common || item.name.common;
                     
                     let kıta = item.continents[0];
                     if (turkceAd === "Türkiye" || turkceAd === "Rusya") {
-                        kıta = "Europe"; // İsteğin üzerine Avrupa olarak sabitledik
+                        kıta = "Europe";
                     }
 
                     return {
@@ -249,14 +246,13 @@
                         nufus: Math.round((item.population / 1000000) * 10) / 10,
                         alan: item.area,
                         kiyi: item.landlocked ? "Yok" : "Var",
-                        komsuKodlari: item.borders || [] // ["GRC", "BGR", "SYR"...] şeklinde kodlar gelir
+                        komsuKodlari: item.borders || []
                     };
                 });
 
-                // Alfabetik sıralama
+                // Hatalı kısım düzeltildi: tr yerine ad kullanıldı
                 countryDB.sort((a, b) => a.ad.localeCompare(b.ad));
 
-                // Rastgele hedef ülke seçimi
                 targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)];
                 console.log("Gizli Ülke (Hile):", targetCountry.ad);
 
@@ -271,7 +267,6 @@
 
         fetchCountries();
 
-        // Arama Motoru (Autocomplete) Yönetimi
         const input = document.getElementById("countryInput");
         const suggestionsList = document.getElementById("suggestions");
 
@@ -319,31 +314,21 @@
 
             const history = document.getElementById("historyRows");
 
-            // 1. Ülke Hücresi
             history.appendChild(createCell(guess.ad, guess.ad === targetCountry.ad));
-
-            // 2. Kıta Hücresi
             history.appendChild(createCell(guess.kita, guess.kita === targetCountry.kita));
 
-            // 3. Nüfus Hücresi
             let popArrow = guess.nufus < targetCountry.nufus ? " ⬆️" : (guess.nufus > targetCountry.nufus ? " ⬇️" : "");
             history.appendChild(createCell(`${guess.nufus} Milyon`, guess.nufus === targetCountry.nufus, popArrow));
 
-            // 4. Yüzölçümü Hücresi
             let areaArrow = guess.alan < targetCountry.alan ? " ⬆️" : (guess.alan > targetCountry.alan ? " ⬇️" : "");
             history.appendChild(createCell(`${guess.alan.toLocaleString()} ㎢`, guess.alan === targetCountry.alan, areaArrow));
 
-            // 5. Deniz Kıyısı Hücresi
             history.appendChild(createCell(`Kıyı: ${guess.kiyi}`, guess.kiyi === targetCountry.kiyi));
 
-            // 6. Dinamik Komşuluk Hücresi Kontrolü
             if (guess.ad === targetCountry.ad) {
                 history.appendChild(createCell("Hedef Ülke", true));
             } else {
-                // Tahmin edilen ülkenin komşu kodlarının Türkçe isimlerini çıkarıyoruz
                 let turkceKomsuIsimleri = guess.komsuKodlari.map(kod => codeToNameDictionary[kod]);
-                
-                // Gizli ülke bu komşuların arasında var mı?
                 const komsuMu = turkceKomsuIsimleri.includes(targetCountry.ad);
                 
                 if (komsuMu) {
