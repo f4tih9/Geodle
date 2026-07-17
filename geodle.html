@@ -4,49 +4,78 @@
     <meta charset="UTF-8">
     <title>Geodle - Oyna</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f6f3ea; display: flex; flex-direction: column; align-items: center; padding: 40px; }
-        .controls { position: relative; width: 100%; max-width: 600px; margin-bottom: 30px; display: flex; gap: 10px; }
-        #countryInput { flex: 1; padding: 15px; border: 2px solid #000; border-radius: 8px; font-size: 16px; }
-        .btn-guess { padding: 10px 20px; background: #2563eb; color: #fff; border: 2px solid #000; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* Renk Değişkenleri */
+        :root {
+            --bg-color: #fcfaf5;
+            --text-color: #000;
+            --box-bg: #fff;
+            --header-bg: #e2e8f0;
+            --btn-color: #2563eb;
+        }
+        
+        body.dark-mode {
+            --bg-color: #1e293b;
+            --text-color: #f8fafc;
+            --box-bg: #334155;
+            --header-bg: #475569;
+            --btn-color: #60a5fa;
+        }
+
+        body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: 0.3s; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+
+        /* Gece/Gündüz Butonu */
+        #themeToggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; border: none; background: none; }
+
+        .controls { display: flex; gap: 10px; margin-bottom: 30px; }
+        
         .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 800px; }
-        .cell { padding: 15px; border: 2px solid #000; background: white; text-align: center; font-weight: bold; border-radius: 6px; }
+        
+        /* Farklı Renkli Başlıklar */
+        .header-cell { background-color: var(--header-bg); padding: 12px; border: 2px solid #000; font-weight: bold; text-align: center; border-radius: 6px; }
+        
+        .cell { padding: 15px; border: 2px solid #000; background: var(--box-bg); text-align: center; font-weight: bold; border-radius: 6px; }
         .match { background-color: #10b981 !important; color: white !important; }
-        .mismatch { background-color: #ef4444 !important; color: white !important; }
     </style>
 </head>
 <body>
+
+    <button id="themeToggle" onclick="toggleTheme()">🌗</button>
+
     <div class="controls">
         <input type="text" id="countryInput" placeholder="Ülke adı gir...">
         <button class="btn-guess" onclick="submitGuess()">Tahmin</button>
     </div>
     
     <div class="grid-layout" id="gameGrid">
-        <!-- Başlıklar -->
-        <div class="cell" style="background:#f0f0f0">Ülke</div>
-        <div class="cell" style="background:#f0f0f0">Kıta</div>
-        <div class="cell" style="background:#f0f0f0">Nüfus</div>
-        <div class="cell" style="background:#f0f0f0">Alan</div>
-        <div class="cell" style="background:#f0f0f0">Kıyı</div>
-        <div class="cell" style="background:#f0f0f0">Komşu</div>
+        <div class="header-cell">Ülke</div>
+        <div class="header-cell">Kıta</div>
+        <div class="header-cell">Nüfus</div>
+        <div class="header-cell">Alan</div>
+        <div class="header-cell">Kıyı</div>
+        <div class="header-cell">Komşu</div>
     </div>
 
     <script>
+        // Mod Değiştirme Fonksiyonu
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
         const countryDB = [
-            { ad: "Türkiye", kita: "Asya", nufus: "85 Mn", alan: "783 km²", kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan"] },
-            { ad: "Almanya", kita: "Avrupa", nufus: "84 Mn", alan: "357 km²", kiyi: "Var", komsular: ["Fransa", "Polonya"] }
+            { ad: "Türkiye", kita: "Asya", nufus: "85 Mn", alan: "783 km²", kiyi: "Var", komsular: ["Yunanistan"] }
         ];
         
-        let target = countryDB[Math.floor(Math.random() * countryDB.length)];
-        const input = document.getElementById('countryInput');
-
+        let target = countryDB[0]; // Basit test için
+        
         function submitGuess() {
+            const input = document.getElementById('countryInput');
             const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
             if (!guess) return alert("Bulunamadı!");
             
             const grid = document.getElementById('gameGrid');
-            [guess.ad, guess.kita, guess.nufus, guess.alan, guess.kiyi, guess.komsular.includes(target.ad) ? "Komşu" : "Uzak"].forEach((val, i) => {
+            [guess.ad, guess.kita, guess.nufus, guess.alan, guess.kiyi, "Uzak"].forEach((val, i) => {
                 const div = document.createElement('div');
-                div.className = 'cell ' + (i === 0 && val === target.ad ? 'match' : 'mismatch');
+                div.className = 'cell ' + (i === 0 && val === target.ad ? 'match' : '');
                 div.textContent = val;
                 grid.appendChild(div);
             });
