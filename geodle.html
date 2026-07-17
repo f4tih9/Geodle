@@ -43,8 +43,26 @@
 
     <script>
         const countryDB = [
-            { ad: "Türkiye", kita: "Asya", nufus: "85 Mn", alan: "783 km²", kiyi: "Var" },
-            { ad: "Bulgaristan", kita: "Avrupa", nufus: "6 Mn", alan: "110 km²", kiyi: "Var" }
+            { ad: "Türkiye", kita: "Avrupa", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg", "İsviçre"] },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "İspanya", "İtalya", "Belçika", "İsviçre", "Lüksemburg"] },
+            { ad: "Amerika Birleşik Devletleri", kita: "Kuzey Amerika", nufus: 339.9, alan: 9833517, kiyi: "Var", komsular: ["Kanada", "Meksika"] },
+            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216.4, alan: 8515767, kiyi: "Var", komsular: ["Arjantin", "Kolombiya", "Peru", "Uruguay", "Paraguay", "Bolivya", "Venezuela"] },
+            { ad: "Çin", kita: "Asya", nufus: 1409.0, alan: 9596961, kiyi: "Var", komsular: ["Rusya", "Hindistan", "Pakistan", "Kazakistan", "Moğolistan", "Vietnam"] },
+            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Çin", "Kazakistan", "Moğolistan", "Ukrayna", "Belarus", "Finlandiya"] },
+            { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var", komsular: [] },
+            { ad: "Mısır", kita: "Afrika", nufus: 112.7, alan: 1002450, kiyi: "Var", komsular: ["Sudan", "Libya", "İsrail"] },
+            { ad: "İtalya", kita: "Avrupa", nufus: 58.9, alan: 301340, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Slovenya"] },
+            { ad: "Kanada", kita: "Kuzey Amerika", nufus: 38.9, alan: 9984670, kiyi: "Var", komsular: ["Amerika Birleşik Devletleri"] },
+            { ad: "Birleşik Krallık", kita: "Avrupa", nufus: 67.3, alan: 242495, kiyi: "Var", komsular: ["İrlanda"] },
+            { ad: "İspanya", kita: "Avrupa", nufus: 47.5, alan: 505992, kiyi: "Var", komsular: ["Fransa", "Portekiz", "Andorra"] },
+            { ad: "Portekiz", kita: "Avrupa", nufus: 10.3, alan: 92212, kiyi: "Var", komsular: ["İspanya"] },
+            { ad: "Yunanistan", kita: "Avrupa", nufus: 10.4, alan: 131957, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Arnavutluk", "Kuzey Makedonya"] },
+            { ad: "İran", kita: "Asya", nufus: 89.1, alan: 1648195, kiyi: "Var", komsular: ["Türkiye", "Irak", "Azerbaycan", "Ermenistan", "Pakistan", "Afganistan"] },
+            { ad: "Irak", kita: "Asya", nufus: 45.5, alan: 438317, kiyi: "Var", komsular: ["Türkiye", "İran", "Suriye", "Suudi Arabistan", "Ürdün", "Kuveyt"] },
+            { ad: "Suriye", kita: "Asya", nufus: 22.9, alan: 185180, kiyi: "Var", komsular: ["Türkiye", "Irak", "Ürdün", "Lübnan", "İsrail"] },
+            { ad: "Azerbaycan", kita: "Asya", nufus: 10.4, alan: 86600, kiyi: "Var", komsular: ["Türkiye", "Rusya", "İran", "Ermenistan", "Gürcistan"] },
+            { ad: "Gürcistan", kita: "Asya", nufus: 3.7, alan: 69700, kiyi: "Var", komsular: ["Türkiye", "Rusya", "Ermenistan", "Azerbaycan"] }
         ];
         
         let target = countryDB[0];
