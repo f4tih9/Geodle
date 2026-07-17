@@ -1,35 +1,28 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="dark-mode">
 <head>
     <meta charset="UTF-8">
-    <title>Geodle - Oyna</title>
+    <title>Geodle - Pro</title>
     <style>
-        :root { --bg: #fcfaf5; --text: #000; --header: #64748b; --cell: #ffffff; }
-        .dark-mode { --bg: #0f172a; --text: #f8fafc; --header: #334155; --cell: #1e293b; }
+        :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; --header: #334155; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
         
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; display: flex; flex-direction: column; align-items: center; padding: 40px; }
-        
-        .controls { position: relative; width: 100%; max-width: 450px; margin-bottom: 40px; }
-        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; font-size: 16px; outline: none; background: var(--cell); color: var(--text); }
-        #suggestions { position: absolute; background: var(--cell); border: 1px solid #ccc; width: 100%; list-style: none; padding: 0; border-radius: 8px; z-index: 10; color: var(--text); }
-        .sugg { padding: 12px; cursor: pointer; }
-        .sugg:hover { background: #3b82f6; color: white; }
+        .controls { width: 100%; max-width: 450px; margin-bottom: 40px; }
+        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; }
 
-        .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; width: 100%; max-width: 900px; }
-        .header-cell { background-color: var(--header); color: white; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
-        .cell { padding: 15px; background: var(--cell); border: 1px solid #cbd5e1; text-align: center; font-weight: bold; border-radius: 8px; }
-        .match { background-color: #10b981 !important; color: white !important; }
+        .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 900px; }
+        .header-cell { background-color: var(--header); padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
+        .cell { padding: 15px; background: #334155; border-radius: 8px; text-align: center; font-weight: bold; transition: 0.3s; }
         
-        #themeToggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; border: none; background: none; }
+        /* Renk Durumları */
+        .match { background-color: #059669 !important; }
+        .mismatch { background-color: #dc2626 !important; }
     </style>
 </head>
-<body class="dark-mode"> <!-- Site otomatik karanlık açılır -->
-
-    <button id="themeToggle" onclick="document.body.classList.toggle('dark-mode')">🌗</button>
+<body>
 
     <div class="controls">
-        <input type="text" id="countryInput" placeholder="Ülke adı yaz..." autocomplete="off">
-        <ul id="suggestions"></ul>
+        <input type="text" id="countryInput" placeholder="Ülke adı yaz...">
     </div>
     
     <div class="grid-layout" id="gameGrid">
@@ -43,52 +36,42 @@
 
     <script>
         const countryDB = [
-            { ad: "Türkiye", kita: "Avrupa", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
-            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg", "İsviçre"] },
-            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "İspanya", "İtalya", "Belçika", "İsviçre", "Lüksemburg"] },
-            { ad: "Amerika Birleşik Devletleri", kita: "Kuzey Amerika", nufus: 339.9, alan: 9833517, kiyi: "Var", komsular: ["Kanada", "Meksika"] },
-            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216.4, alan: 8515767, kiyi: "Var", komsular: ["Arjantin", "Kolombiya", "Peru", "Uruguay", "Paraguay", "Bolivya", "Venezuela"] },
-            { ad: "Çin", kita: "Asya", nufus: 1409.0, alan: 9596961, kiyi: "Var", komsular: ["Rusya", "Hindistan", "Pakistan", "Kazakistan", "Moğolistan", "Vietnam"] },
-            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Çin", "Kazakistan", "Moğolistan", "Ukrayna", "Belarus", "Finlandiya"] },
-            { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var", komsular: [] },
-            { ad: "Mısır", kita: "Afrika", nufus: 112.7, alan: 1002450, kiyi: "Var", komsular: ["Sudan", "Libya", "İsrail"] },
-            { ad: "İtalya", kita: "Avrupa", nufus: 58.9, alan: 301340, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Slovenya"] },
-            { ad: "Kanada", kita: "Kuzey Amerika", nufus: 38.9, alan: 9984670, kiyi: "Var", komsular: ["Amerika Birleşik Devletleri"] },
-            { ad: "Birleşik Krallık", kita: "Avrupa", nufus: 67.3, alan: 242495, kiyi: "Var", komsular: ["İrlanda"] },
-            { ad: "İspanya", kita: "Avrupa", nufus: 47.5, alan: 505992, kiyi: "Var", komsular: ["Fransa", "Portekiz", "Andorra"] },
-            { ad: "Portekiz", kita: "Avrupa", nufus: 10.3, alan: 92212, kiyi: "Var", komsular: ["İspanya"] },
-            { ad: "Yunanistan", kita: "Avrupa", nufus: 10.4, alan: 131957, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Arnavutluk", "Kuzey Makedonya"] },
-            { ad: "İran", kita: "Asya", nufus: 89.1, alan: 1648195, kiyi: "Var", komsular: ["Türkiye", "Irak", "Azerbaycan", "Ermenistan", "Pakistan", "Afganistan"] },
-            { ad: "Irak", kita: "Asya", nufus: 45.5, alan: 438317, kiyi: "Var", komsular: ["Türkiye", "İran", "Suriye", "Suudi Arabistan", "Ürdün", "Kuveyt"] },
-            { ad: "Suriye", kita: "Asya", nufus: 22.9, alan: 185180, kiyi: "Var", komsular: ["Türkiye", "Irak", "Ürdün", "Lübnan", "İsrail"] },
-            { ad: "Azerbaycan", kita: "Asya", nufus: 10.4, alan: 86600, kiyi: "Var", komsular: ["Türkiye", "Rusya", "İran", "Ermenistan", "Gürcistan"] },
-            { ad: "Gürcistan", kita: "Asya", nufus: 3.7, alan: 69700, kiyi: "Var", komsular: ["Türkiye", "Rusya", "Ermenistan", "Azerbaycan"] }
+            { ad: "Türkiye", kita: "Asya", nufus: 85, alan: 783, kiyi: "Var", komsular: ["Bulgaristan"] },
+            { ad: "Bulgaristan", kita: "Avrupa", nufus: 6, alan: 110, kiyi: "Var", komsular: ["Türkiye"] }
         ];
         
-        let target = countryDB[0];
+        let target = countryDB[0]; // Hedef: Türkiye
         const input = document.getElementById('countryInput');
-        const list = document.getElementById('suggestions');
-
-        input.oninput = () => {
-            list.innerHTML = '';
-            const val = input.value.toLowerCase();
-            if(!val) return;
-            const found = countryDB.find(c => c.ad.toLowerCase().startsWith(val));
-            if(found) {
-                const li = document.createElement('li');
-                li.className = 'sugg'; li.textContent = found.ad;
-                li.onclick = () => { input.value = found.ad; list.innerHTML = ''; submitGuess(); }; // Tıklayınca otomatik seçer ve tahmin eder
-                list.appendChild(li);
-            }
-        };
 
         function submitGuess() {
             const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
             if (!guess) return;
+
             const grid = document.getElementById('gameGrid');
-            [guess.ad, guess.kita, guess.nufus, guess.alan, guess.kiyi, "Uzak"].forEach((val, i) => {
+            
+            // Verileri oluştur
+            const data = [
+                guess.ad, 
+                guess.kita, 
+                guess.nufus + (guess.nufus < target.nufus ? " Mn ⬆️" : (guess.nufus > target.nufus ? " Mn ⬇️" : " Mn")),
+                guess.alan + (guess.alan < target.alan ? " km² ⬆️" : (guess.alan > target.alan ? " km² ⬇️" : " km²")),
+                guess.kiyi,
+                (guess.komsular.includes(target.ad) ? "Evet" : "Hayır")
+            ];
+
+            data.forEach((val, i) => {
                 const div = document.createElement('div');
-                div.className = 'cell ' + (i === 0 && val === target.ad ? 'match' : '');
+                div.className = 'cell';
+                
+                // Renk mantığı
+                let isCorrect = false;
+                if(i === 0) isCorrect = (guess.ad === target.ad);
+                else if(i === 1) isCorrect = (guess.kita === target.kita);
+                else if(i === 4) isCorrect = (guess.kiyi === target.kiyi);
+                else if(i === 5) isCorrect = (guess.komsular.includes(target.ad));
+                else if(i === 2 || i === 3) isCorrect = (val.includes("Mn") || val.includes("km²")) && (val.includes("⬆️") || val.includes("⬇️") ? false : true);
+
+                div.className += isCorrect ? " match" : (i < 5 ? " mismatch" : (guess.komsular.includes(target.ad) ? " match" : " mismatch"));
                 div.textContent = val;
                 grid.appendChild(div);
             });
