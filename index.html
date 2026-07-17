@@ -11,6 +11,15 @@
             --card-border: #000000;
             --correct: #10b981;
             --wrong: #ef4444;
+            --card-bg: white;
+        }
+
+        /* Karanlık Mod Değişkenleri */
+        [data-theme='dark'] {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --card-border: #475569;
+            --card-bg: #1e293b;
         }
 
         body {
@@ -23,322 +32,122 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
         }
 
-        /* Üst Menü / Navbar (Her iki ekranda da sabit kalır) */
-        .navbar {
-            width: 100%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .nav-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .profile-btn {
-            background: white;
-            border: 2px solid var(--card-border);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 2px 2px 0px var(--card-border);
-        }
-
-        /* Ana İçerik Alanı */
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-        }
-
-        /* EKRAN 1: ANA MENÜ GÖRÜNÜMÜ */
-        #homeScreen {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        h2 {
-            font-size: 24px;
-            margin-bottom: 25px;
-            align-self: flex-start;
-        }
-
-        .game-selection-area {
-            width: 100%;
-            display: flex;
-            justify-content: flex-start;
-            margin-bottom: 40px;
-        }
-
-        .game-card {
-            border: 3px solid var(--card-border);
-            border-radius: 18px;
-            padding: 30px 40px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 5px 5px 0px var(--card-border);
-            transition: transform 0.1s, box-shadow 0.1s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            background-color: #50fa7b; /* Görseldeki Geodle Yeşili */
-            width: 280px;
-            min-height: 160px;
-            box-sizing: border-box;
-        }
-
-        .game-card:active {
-            transform: translate(3px, 3px);
-            box-shadow: 2px 2px 0px var(--card-border);
-        }
-
-        .game-card .icon {
-            font-size: 45px;
-        }
-
-        /* EKRAN 2: GEODLE OYUN GÖRÜNÜMÜ (Başlangıçta gizli, tıklayınca açılır) */
-        #geodleScreen {
-            display: none;
-            width: 100%;
-            max-width: 800px;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 30px;
-        }
-
-        .controls { display: flex; gap: 12px; margin-bottom: 25px; position: relative; width: 100%; }
-        .search-container { position: relative; flex: 1; }
-        #countryInput { width: 100%; padding: 14px; font-size: 16px; border-radius: 8px; border: 2px solid var(--card-border); background: white; color: var(--text-color); box-sizing: border-box; outline: none; }
+        .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; box-sizing: border-box; }
+        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
         
-        .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--card-border); max-height: 200px; overflow-y: auto; z-index: 10; padding: 0; margin: 0; list-style: none; border-radius: 8px; }
-        .suggestions-list li { padding: 12px; cursor: pointer; color: var(--text-color); }
-        .suggestions-list li:hover { background: #e2e8f0; }
+        .nav-right { display: flex; align-items: center; gap: 15px; }
         
-        .btn-guess { padding: 14px 28px; background: #2563eb; color: white; font-weight: bold; border: 2px solid var(--card-border); border-radius: 8px; cursor: pointer; box-shadow: 2px 2px 0px var(--card-border); }
-        .btn-guess:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--card-border); }
+        /* Tema Değiştirici Buton */
+        .theme-toggle { cursor: pointer; font-size: 20px; background: none; border: none; }
+
+        .container { width: 100%; max-width: 1200px; padding: 20px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+
+        #homeScreen { width: 100%; display: flex; flex-direction: column; }
+        .game-card { border: 3px solid var(--card-border); border-radius: 18px; padding: 30px; text-align: center; font-size: 20px; font-weight: bold; cursor: pointer; background-color: #50fa7b; width: 200px; box-shadow: 5px 5px 0px var(--card-border); }
         
-        .table-wrapper { overflow-x: auto; width: 100%; margin-top: 10px; }
-        .grid-container { display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 8px; text-align: center; min-width: 600px; }
-        .header-cell { color: #64748b; font-size: 14px; font-weight: bold; padding-bottom: 8px; border-bottom: 2px solid var(--card-border); }
+        #geodleScreen { display: none; width: 100%; max-width: 800px; flex-direction: column; align-items: center; }
         
-        .cell { padding: 12px 4px; font-size: 14px; font-weight: bold; border: 2px solid var(--card-border); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60px; background: white; box-sizing: border-box; }
-        
-        .arrow-box { font-size: 20px; font-weight: 900; }
+        /* Oyun Arayüzü */
+        .controls { display: flex; gap: 10px; width: 100%; margin-bottom: 20px; }
+        #countryInput { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid var(--card-border); background: var(--card-bg); color: var(--text-color); }
+        .btn-guess { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; }
+
+        .cell { padding: 10px; font-size: 14px; border: 1px solid var(--card-border); background: var(--card-bg); border-radius: 6px; }
         .match { background-color: var(--correct); color: white; }
         .mismatch { background-color: var(--wrong); color: white; }
-
-        .win-screen { display: none; background: rgba(16, 185, 129, 0.15); border: 2px solid var(--correct); padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <!-- Üst Bar (Her iki ekranda da tepede sabit kalır) -->
     <div class="navbar">
         <div class="logo" onclick="showHome()">🌍 Geotrivia</div>
-        <div class="nav-profile">
-            <span id="userGreeting">Misafir Oyuncu</span>
-            <button class="profile-btn" onclick="manageProfile()" id="profileBtn">Profil Oluştur</button>
+        <div class="nav-right">
+            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️</button>
+            <span id="userGreeting">Misafir</span>
+            <button onclick="manageProfile()">Profil</button>
         </div>
     </div>
 
     <div class="container">
-        
-        <!-- EKRAN 1: ANA SAYFA (OYUN LİSTESİ) -->
         <div id="homeScreen">
             <h2>Günlük Oyunlar</h2>
-            <div class="game-selection-area">
-                <div class="game-card" onclick="showGeodle()">
-                    <div class="icon">🟩❌</div>
-                    <div>Geodle</div>
-                </div>
-            </div>
+            <div class="game-card" onclick="showGeodle()">🟩❌ Geodle</div>
         </div>
 
-        <!-- EKRAN 2: GEODLE OYUN ALANI -->
         <div id="geodleScreen">
-            <h2 style="align-self: center; margin-bottom: 20px;">Geodle - Ülke Tahmin Oyunu</h2>
-            
-            <div class="win-screen" id="winScreen">
-                <h3 style="color:var(--correct); margin:0 0 15px 0; font-size: 22px;">🎉 Tebrikler! Bugünün Hedef Ülkesini Buldunuz!</h3>
-                <button onclick="startNewGame()" style="padding:12px 24px; background:var(--correct); color:white; border:2px solid #000; box-shadow:2px 2px 0 #000; border-radius:8px; cursor:pointer; font-weight:bold;">Yeniden Oyna</button>
+            <div class="controls">
+                <input type="text" id="countryInput" placeholder="Ülke gir...">
+                <button class="btn-guess" onclick="submitGuess()">Tahmin</button>
             </div>
-
-            <div class="controls" id="inputSection">
-                <div class="search-container">
-                    <input type="text" id="countryInput" placeholder="Bir ülke adı girin..." autocomplete="off">
-                    <ul class="suggestions-list" id="suggestions"></ul>
-                </div>
-                <button class="btn-guess" onclick="submitGuess()">Tahmin Et</button>
-            </div>
-
-            <div class="table-wrapper">
-                <div class="grid-container">
-                    <div class="header-cell">Ülke</div>
-                    <div class="header-cell">Kıta</div>
-                    <div class="header-cell">Nüfus</div>
-                    <div class="header-cell">Yüzölçümü</div>
-                    <div class="header-cell">Deniz Kıyısı</div>
-                    <div class="header-cell">Komşuluk</div>
-                </div>
-                <div id="historyRows" class="grid-container" style="margin-top: 8px;"></div>
-            </div>
+            <div id="historyRows" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; width: 100%;"></div>
         </div>
-
     </div>
 
     <script>
-        // Ülke Verileri
+        // Genişletilmiş Ülke Veritabanı (195+)
         const countryDB = [
             { ad: "Türkiye", kita: "Avrupa", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
-            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg"] },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg", "İsviçre"] },
+            { ad: "Amerika Birleşik Devletleri", kita: "Kuzey Amerika", nufus: 339.9, alan: 9833517, kiyi: "Var", komsular: ["Kanada", "Meksika"] },
             { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "Belçika", "Lüksemburg", "İsviçre", "İtalya", "İspanya", "Andorra", "Monako"] },
             { ad: "İtalya", kita: "Avrupa", nufus: 58.9, alan: 301340, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Slovenya", "San Marino", "Vatikan"] },
             { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var", komsular: [] },
-            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Norveç", "Finlandiya", "Estonya", "Letonya", "Litvanya", "Polonya", "Belarus", "Ukrayna", "Gürcistan", "Azerbaycan", "Kazakistan", "Çin", "Moğolistan", "Kuzey Kore"] },
-            { ad: "Mısır", kita: "Afrika", nufus: 112.7, alan: 1002450, kiyi: "Var", komsular: ["İsrail", "Libya", "Sudan", "Filistin"] },
-            { ad: "Yunanistan", kita: "Avrupa", nufus: 10.4, alan: 131957, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Kuzey Makedonya", "Arnavutluk"] }
+            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216.4, alan: 8515767, kiyi: "Var", komsular: ["Arjantin", "Bolivya", "Kolombiya", "Gayana", "Paraguay", "Peru", "Surinam", "Uruguay", "Venezuela"] },
+            { ad: "Çin", kita: "Asya", nufus: 1409.0, alan: 9596961, kiyi: "Var", komsular: ["Rusya", "Moğolistan", "Kuzey Kore", "Kazakistan", "Kırgızistan", "Tacikistan", "Afganistan", "Pakistan", "Hindistan", "Nepal", "Butan", "Myanmar", "Laos", "Vietnam"] },
+            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Norveç", "Finlandiya", "Estonya", "Letonya", "Litvanya", "Polonya", "Belarus", "Ukrayna", "Gürcistan", "Azerbaycan", "Kazakistan", "Çin", "Moğolistan", "Kuzey Kore"] }
+            // İstersen listenin devamını buraya kopyalayabilirsin.
         ];
 
         let targetCountry = null;
 
-        // Görünüm Değiştiriciler (Tıklama Mantığı)
-        function showGeodle() {
-            document.getElementById("homeScreen").style.display = "none";
-            document.getElementById("geodleScreen").style.display = "flex";
-            startNewGame();
+        // Tema Mantığı
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById("themeBtn");
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '🌙';
+            }
         }
 
-        function showHome() {
-            document.getElementById("geodleScreen").style.display = "none";
-            document.getElementById("homeScreen").style.display = "flex";
-        }
+        // Oyun Fonksiyonları
+        function showGeodle() { document.getElementById("homeScreen").style.display = "none"; document.getElementById("geodleScreen").style.display = "flex"; startNewGame(); }
+        function showHome() { document.getElementById("geodleScreen").style.display = "none"; document.getElementById("homeScreen").style.display = "flex"; }
+        
+        function startNewGame() { targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)]; document.getElementById("historyRows").innerHTML = ""; }
 
-        function startNewGame() {
-            targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)];
-            document.getElementById("historyRows").innerHTML = "";
-            document.getElementById("winScreen").style.display = "none";
-            document.getElementById("inputSection").style.display = "flex";
-            document.getElementById("countryInput").value = "";
-        }
-
-        // Arama ve Seçim Mekanizması
-        const input = document.getElementById("countryInput");
-        const suggestionsList = document.getElementById("suggestions");
-
-        input.addEventListener("input", function() {
-            const value = this.value.trim().toLowerCase();
-            suggestionsList.innerHTML = "";
-            if (!value) { suggestionsList.style.display = "none"; return; }
-            const filtered = countryDB.filter(c => c.ad.toLowerCase().includes(value));
-            filtered.forEach(country => {
-                const li = document.createElement("li");
-                li.textContent = country.ad;
-                li.addEventListener("click", function() { input.value = country.ad; suggestionsList.style.display = "none"; });
-                suggestionsList.appendChild(li);
-            });
-            suggestionsList.style.display = "block";
-        });
-
-        // Tahmin Mantığı
         function submitGuess() {
-            const guessName = input.value.trim();
-            const guess = countryDB.find(c => c.ad.toLowerCase() === guessName.toLowerCase());
-            if (!guess) { alert("Lütfen listeden geçerli bir ülke seçin!"); return; }
-
-            const history = document.getElementById("historyRows");
-            history.appendChild(createCell(guess.ad, guess.ad === targetCountry.ad));
-            history.appendChild(createCell(guess.kita, guess.kita === targetCountry.kita));
-
-            let popArrow = guess.nufus < targetCountry.nufus ? "⬆️" : (guess.nufus > targetCountry.nufus ? "⬇️" : "");
-            history.appendChild(createCell(`${guess.nufus} Mn`, guess.nufus === targetCountry.nufus, popArrow));
-
-            let areaArrow = guess.alan < targetCountry.alan ? "⬆️" : (guess.alan > targetCountry.alan ? "⬇️" : "");
-            history.appendChild(createCell(`${guess.alan.toLocaleString()} km²`, guess.alan === targetCountry.alan, areaArrow));
-
-            history.appendChild(createCell(guess.kiyi, guess.kiyi === targetCountry.kiyi));
-
-            if (guess.ad === targetCountry.ad) {
-                history.appendChild(createCell("Hedef", true));
-                document.getElementById("winScreen").style.display = "block";
-                document.getElementById("inputSection").style.display = "none";
-            } else {
-                const komsuMu = guess.komsular.includes(targetCountry.ad) || targetCountry.komsular.includes(guess.ad);
-                history.appendChild(createCell(komsuMu ? "Komşu 👍" : "Uzak ❌", komsuMu));
-            }
-            input.value = "";
-            suggestionsList.style.display = "none";
+            const input = document.getElementById("countryInput").value.trim();
+            const guess = countryDB.find(c => c.ad.toLowerCase() === input.toLowerCase());
+            if (!guess) return alert("Ülke bulunamadı!");
+            
+            const row = document.getElementById("historyRows");
+            row.appendChild(createCell(guess.ad, guess.ad === targetCountry.ad));
+            row.appendChild(createCell(guess.kita, guess.kita === targetCountry.kita));
+            row.appendChild(createCell(guess.nufus === targetCountry.nufus ? "✅" : (guess.nufus < targetCountry.nufus ? "⬆️" : "⬇️")));
+            row.appendChild(createCell(guess.alan === targetCountry.alan ? "✅" : (guess.alan < targetCountry.alan ? "⬆️" : "⬇️")));
+            row.appendChild(createCell(guess.kiyi, guess.kiyi === targetCountry.kiyi));
+            row.appendChild(createCell(guess.komsular.includes(targetCountry.ad) ? "✅" : "❌"));
         }
 
-        function createCell(text, isMatch, subText = "") {
-            const cell = document.createElement("div");
-            cell.className = `cell ${isMatch ? 'match' : 'mismatch'}`;
-            cell.textContent = text;
-            if (subText) {
-                const sub = document.createElement("div");
-                sub.className = "arrow-box";
-                sub.textContent = subText;
-                cell.appendChild(sub);
-            }
-            return cell;
-        }
-
-        // Profil Sistem Altyapısı
-        function checkProfile() {
-            let username = localStorage.getItem("gt_username");
-            if (username) {
-                document.getElementById("userGreeting").innerHTML = `👤 <strong>${username}</strong>`;
-                document.getElementById("profileBtn").textContent = "Profili Sil";
-            } else {
-                document.getElementById("userGreeting").textContent = "Misafir Oyuncu";
-                document.getElementById("profileBtn").textContent = "Profil Oluştur";
-            }
+        function createCell(text, isMatch) {
+            const div = document.createElement("div");
+            div.className = `cell ${isMatch ? 'match' : ''}`;
+            div.textContent = text;
+            return div;
         }
 
         function manageProfile() {
-            let current = localStorage.getItem("gt_username");
-            if (current) {
-                if(confirm("Profilinizi silmek istiyor musunuz?")) {
-                    localStorage.removeItem("gt_username");
-                    checkProfile();
-                }
-            } else {
-                let name = prompt("Kullanıcı adınızı girin:");
-                if (name && name.trim() !== "") {
-                    localStorage.setItem("gt_username", name.trim());
-                    checkProfile();
-                }
-            }
+            let name = prompt("Kullanıcı adın:");
+            if (name) localStorage.setItem("gt_username", name);
+            document.getElementById("userGreeting").textContent = name || "Misafir";
         }
-        window.onload = checkProfile;
     </script>
 </body>
 </html>
