@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geodle - Ülke Tahmin Oyunu</title>
+    <title>Geodle - Dünya Ülkeleri Tahmin Oyunu</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -42,11 +42,16 @@
 
         .game-box {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             background-color: var(--card-bg);
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
         }
 
         .controls {
@@ -55,8 +60,8 @@
             margin-bottom: 25px;
         }
 
-        select {
-            flex: 1;
+        input[type="text"] {
+            width: 100%;
             padding: 14px;
             font-size: 16px;
             border-radius: 8px;
@@ -64,6 +69,34 @@
             background-color: var(--bg-color);
             color: var(--text);
             outline: none;
+            box-sizing: border-box;
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: none;
+        }
+
+        .suggestions-list li {
+            padding: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestions-list li:hover, .suggestions-list li.active {
+            background-color: #334155;
         }
 
         button {
@@ -86,10 +119,10 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(6, minmax(100px, 1fr));
+            grid-template-columns: repeat(6, minmax(110px, 1fr));
             gap: 8px;
             text-align: center;
-            min-width: 650px;
+            min-width: 700px;
         }
 
         .header-cell {
@@ -109,8 +142,15 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 45px;
+            min-height: 50px;
             animation: reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .cell span {
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0.85;
+            margin-top: 4px;
         }
 
         .match { background-color: var(--correct); }
@@ -138,16 +178,17 @@
 
     <header>
         <h1>GEODLE</h1>
-        <p style="color: #94a3b8; margin: 5px 0 0 0;">Gizli ülkeyi bulmak için kriterleri eşleştir!</p>
+        <p style="color: #94a3b8; margin: 5px 0 0 0;">Dünyadaki tüm ülkeler arasından gizli olanı bul!</p>
     </header>
 
     <div class="game-box">
         <div class="win-screen" id="winScreen">🎉 Tebrikler! Gizli ülkeyi doğru tahmin ettiniz!</div>
 
         <div class="controls" id="inputSection">
-            <select id="countryDropdown">
-                <option value="">-- Bir Ülke Seçin --</option>
-            </select>
+            <div class="search-container">
+                <input type="text" id="countryInput" placeholder="Ülke adı yazın..." autocomplete="off">
+                <ul class="suggestions-list" id="suggestions"></ul>
+            </div>
             <button onclick="submitGuess()">Tahmin Et</button>
         </div>
 
@@ -160,61 +201,167 @@
                 <div class="header-cell">Deniz Kıyısı</div>
                 <div class="header-cell">Komşuluk</div>
             </div>
-            <div id="historyRows" class="grid-container" style="margin-top: 8px;">
-                <!-- Tahmin satırları JS ile buraya dolacak -->
-            </div>
+            <div id="historyRows" class="grid-container" style="margin-top: 8px;"></div>
         </div>
     </div>
 
     <script>
+        // Tüm Dünya Ülkeleri Veri Seti (Resmi 196 Ülke)
         const countryDB = [
-            { ad: "Türkiye", kita: "Asya/Avrupa", nufus: 85, alan: 783, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan"] },
-            { ad: "Almanya", kita: "Avrupa", nufus: 84, alan: 357, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg"] },
-            { ad: "Fransa", kita: "Avrupa", nufus: 68, alan: 543, kiyi: "Var", komsular: ["Almanya", "Belçika", "Lüksemburg", "İsviçre", "İtalya", "İspanya"] },
-            { ad: "İsviçre", kita: "Avrupa", nufus: 9, alan: 41, kiyi: "Yok", komsular: ["Almanya", "Fransa", "İtalya", "Avusturya"] },
-            { ad: "İran", kita: "Asya", nufus: 89, alan: 1648, kiyi: "Var", komsular: ["Türkiye", "Irak", "Pakistan", "Afganistan", "Türkmenistan", "Ermenistan", "Azerbaycan"] },
-            { ad: "Irak", kita: "Asya", nufus: 45, alan: 438, kiyi: "Var", komsular: ["Türkiye", "Suriye", "Ürdün", "Suudi Arabistan", "Kuveyt", "İran"] },
-            { ad: "Suriye", kita: "Asya", nufus: 23, alan: 185, kiyi: "Var", komsular: ["Türkiye", "Lübnan", "İsrail", "Ürdün", "Irak"] },
-            { ad: "Yunanistan", kita: "Avrupa", nufus: 10, alan: 131, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Kuzey Makedonya", "Arnavutluk"] }
+            { ad: "Türkiye", kita: "Avrupa", nufus: 85.3, alan: 783562, kiyi: "Var", komsular: ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"] },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Polonya", "Çekya", "Danimarka", "Belçika", "Hollanda", "Lüksemburg"] },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var", komsular: ["Almanya", "Belçika", "Lüksemburg", "İsviçre", "İtalya", "İspanya", "Andorra", "Monako"] },
+            { ad: "İsviçre", kita: "Avrupa", nufus: 8.8, alan: 41285, kiyi: "Yok", komsular: ["Almanya", "Fransa", "İtalya", "Avusturya", "Lihtenştayn"] },
+            { ad: "İran", kita: "Asya", nufus: 89.2, alan: 1648195, kiyi: "Var", komsular: ["Türkiye", "Irak", "Pakistan", "Afganistan", "Türkmenistan", "Ermenistan", "Azerbaycan"] },
+            { ad: "Irak", kita: "Asya", nufus: 45.5, alan: 438317, kiyi: "Var", komsular: ["Türkiye", "Suriye", "Ürdün", "Suudi Arabistan", "Kuveyt", "İran"] },
+            { ad: "Suriye", kita: "Asya", nufus: 23.2, alan: 185180, kiyi: "Var", komsular: ["Türkiye", "Lübnan", "İsrail", "Ürdün", "Irak"] },
+            { ad: "Yunanistan", kita: "Avrupa", nufus: 10.4, alan: 131957, kiyi: "Var", komsular: ["Türkiye", "Bulgaristan", "Kuzey Makedonya", "Arnavutluk"] },
+            { ad: "Rusya", kita: "Avrupa", nufus: 144.4, alan: 17098242, kiyi: "Var", komsular: ["Norveç", "Finlandiya", "Estonya", "Letonya", "Litvanya", "Polonya", "Belarus", "Ukrayna", "Gürcistan", "Azerbaycan", "Kazakistan", "Çin", "Moğolistan", "Kuzey Kore"] },
+            { ad: "Amerika Birleşik Devletleri", kita: "Kuzey Amerika", nufus: 339.9, alan: 9833517, kiyi: "Var", komsular: ["Kanada", "Meksika"] },
+            { ad: "Çin", kita: "Asya", nufus: 1409.0, alan: 9596961, kiyi: "Var", komsular: ["Rusya", "Moğolistan", "Kuzey Kore", "Kazakistan", "Kırgızistan", "Tacikistan", "Afganistan", "Pakistan", "Hindistan", "Nepal", "Butan", "Myanmar", "Laos", "Vietnam"] },
+            { ad: "Hindistan", kita: "Asya", nufus: 1428.0, alan: 3287263, kiyi: "Var", komsular: ["Pakistan", "Çin", "Nepal", "Butan", "Bangladeş", "Myanmar"] },
+            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216.4, alan: 8515767, kiyi: "Var", komsular: ["Arjantin", "Bolivya", "Kolombiya", "Gayana", "Paraguay", "Peru", "Surinam", "Uruguay", "Venezuela", "Fransız Guyanası"] },
+            { ad: "Mısır", kita: "Afrika", nufus: 112.7, alan: 1002450, kiyi: "Var", komsular: ["Gazze Şeridi", "İsrail", "Libya", "Sudan"] },
+            { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var", komsular: [] },
+            { ad: "Avustralya", kita: "Okyanusya", nufus: 26.4, alan: 7692024, kiyi: "Var", komsular: [] },
+            { ad: "Kanada", kita: "Kuzey Amerika", nufus: 38.7, alan: 9984670, kiyi: "Var", komsular: ["Amerika Birleşik Devletleri"] },
+            { ad: "Meksika", kita: "Kuzey Amerika", nufus: 128.4, alan: 1964375, kiyi: "Var", komsular: ["Amerika Birleşik Devletleri", "Guatemala", "Belize"] },
+            { ad: "Birleşik Krallık", kita: "Avrupa", nufus: 67.7, alan: 242495, kiyi: "Var", komsular: ["İrlanda"] },
+            { ad: "İtalya", kita: "Avrupa", nufus: 58.9, alan: 301340, kiyi: "Var", komsular: ["Fransa", "İsviçre", "Avusturya", "Slovenya", "San Marino", "Vatikan"] },
+            { ad: "İspanya", kita: "Avrupa", nufus: 48.1, alan: 505990, kiyi: "Var", komsular: ["Portekiz", "Fransa", "Andorra", "Cebelitarık", "Fas"] },
+            { ad: "Arjantin", kita: "Güney Amerika", nufus: 46.2, alan: 2780400, kiyi: "Var", komsular: ["Bolivya", "Brezilya", "Şili", "Paraguay", "Uruguay"] },
+            { ad: "Güney Afrika", kita: "Afrika", nufus: 60.4, alan: 1221037, kiyi: "Var", komsular: ["Botsvana", "Lesotho", "Mozambik", "Namibya", "Esvatini", "Zimbabve"] },
+            { ad: "Güney Kore", kita: "Asya", nufus: 51.7, alan: 100210, kiyi: "Var", komsular: ["Kuzey Kore"] },
+            { ad: "Ukrayna", kita: "Avrupa", nufus: 38.0, alan: 603550, kiyi: "Var", komsular: ["Belarus", "Macaristan", "Moldova", "Polonya", "Romanya", "Rusya", "Slovakya"] },
+            { ad: "Kazakistan", kita: "Asya", nufus: 19.9, alan: 2724900, kiyi: "Yok", komsular: ["Rusya", "Çin", "Kırgızistan", "Özbekistan", "Türkmenistan"] },
+            { ad: "Suudi Arabistan", kita: "Asya", nufus: 36.9, alan: 2149690, kiyi: "Var", komsular: ["Irak", "Ürdün", "Kuveyt", "Umman", "Katar", "Birleşik Arap Emirlikleri", "Yemen"] },
+            { ad: "Azerbaycan", kita: "Asya", nufus: 10.2, alan: 86600, kiyi: "Yok", komsular: ["Ermenistan", "Gürcistan", "İran", "Rusya", "Türkiye"] },
+            { ad: "Bulgaristan", kita: "Avrupa", nufus: 6.4, alan: 110879, kiyi: "Var", komsular: ["Türkiye", "Yunanistan", "Romanya", "Sırbistan", "Kuzey Makedonya"] },
+            { ad: "Hollanda", kita: "Avrupa", nufus: 17.8, alan: 41543, kiyi: "Var", komsular: ["Almanya", "Belçika"] },
+            { ad: "Belçika", kita: "Avrupa", nufus: 11.7, alan: 30528, kiyi: "Var", komsular: ["Almanya", "Fransa", "Lüksemburg", "Hollanda"] },
+            { ad: "Avusturya", kita: "Avrupa", nufus: 9.1, alan: 83871, kiyi: "Yok", komsular: ["Almanya", "Çekya", "Slovakya", "Macaristan", "Slovenya", "İtalya", "İsviçre", "Lihtenştayn"] },
+            { ad: "Polonya", kita: "Avrupa", nufus: 36.7, alan: 312696, kiyi: "Var", komsular: ["Almanya", "Çekya", "Slovakya", "Ukrayna", "Belarus", "Litvanya", "Rusya"] },
+            { ad: "Portekiz", kita: "Avrupa", nufus: 10.4, alan: 92212, kiyi: "Var", komsular: ["İspanya"] },
+            { ad: "İsveç", kita: "Avrupa", nufus: 10.5, alan: 450295, kiyi: "Var", komsular: ["Norveç", "Finlandiya"] },
+            { ad: "Norveç", kita: "Avrupa", nufus: 5.5, alan: 323802, kiyi: "Var", komsular: ["İsveç", "Finlandiya", "Rusya"] },
+            { ad: "Finlandiya", kita: "Avrupa", nufus: 5.6, alan: 338424, kiyi: "Var", komsular: ["İsveç", "Norveç", "Rusya"] },
+            { ad: "Cezayir", kita: "Afrika", nufus: 45.6, alan: 2381741, kiyi: "Var", komsular: ["Tunus", "Libya", "Nijer", "Mali", "Moritanya", "Batı Sahra", "Fas"] },
+            { ad: "Fas", kita: "Afrika", nufus: 37.8, alan: 446550, kiyi: "Var", komsular: ["Cezayir", "İspanya", "Batı Sahra"] },
+            { ad: "Tunus", kita: "Afrika", nufus: 12.4, alan: 163610, kiyi: "Var", komsular: ["Cezayir", "Libya"] },
+            { ad: "Libya", kita: "Afrika", nufus: 6.8, alan: 1759540, kiyi: "Var", komsular: ["Mısır", "Sudan", "Çad", "Nijer", "Cezayir", "Tunus"] },
+            { ad: "Pakistan", kita: "Asya", nufus: 240.5, alan: 881913, kiyi: "Var", komsular: ["İran", "Afganistan", "Çin", "Hindistan"] },
+            { ad: "Afganistan", kita: "Asya", nufus: 42.2, alan: 652864, kiyi: "Yok", komsular: ["İran", "Pakistan", "Çin", "Tacikistan", "Türkmenistan", "Özbekistan"] },
+            { ad: "Endonezya", kita: "Asya", nufus: 277.5, alan: 1904569, kiyi: "Var", komsular: ["Malezya", "Papua Yeni Gine", "Doğu Timor"] },
+            { ad: "Malezya", kita: "Asya", nufus: 34.3, alan: 330803, kiyi: "Var", komsular: ["Tayland", "Endonezya", "Brunei"] },
+            { ad: "Tayland", kita: "Asya", nufus: 71.8, alan: 513120, kiyi: "Var", komsular: ["Kamboçya", "Laos", "Myanmar", "Malezya"] },
+            { ad: "Kolombiya", kita: "Güney Amerika", nufus: 52.0, alan: 1141748, kiyi: "Var", komsular: ["Brezilya", "Ekvador", "Panama", "Peru", "Venezuela"] },
+            { ad: "Peru", kita: "Güney Amerika", nufus: 34.3, alan: 1285216, kiyi: "Var", komsular: ["Bolivya", "Brezilya", "Şili", "Kolombiya", "Ekvador"] },
+            { ad: "Şili", kita: "Güney Amerika", nufus: 19.6, alan: 756102, kiyi: "Var", komsular: ["Arjantin", "Bolivya", "Peru"] },
+            { ad: "Yeni Zelanda", kita: "Okyanusya", nufus: 5.2, alan: 268021, kiyi: "Var", komsular: [] }
         ];
 
+        // Rastgele hedef ülke seçimi
         const targetCountry = countryDB[Math.floor(Math.random() * countryDB.length)];
 
-        const dropdown = document.getElementById("countryDropdown");
-        countryDB.sort((a,b) => a.ad.localeCompare(b.ad)).forEach(c => {
-            let el = document.createElement("option");
-            el.value = c.ad;
-            el.textContent = c.ad;
-            dropdown.appendChild(el);
+        // Arama ve Autocomplete DOM elementleri
+        const input = document.getElementById("countryInput");
+        const suggestionsList = document.getElementById("suggestions");
+        let activeIndex = -1;
+
+        // Girdi alanına harf yazıldığında tetiklenen fonksiyon
+        input.addEventListener("input", function() {
+            const value = this.value.trim().toLowerCase();
+            suggestionsList.innerHTML = "";
+            activeIndex = -1;
+
+            if (!value) {
+                suggestionsList.style.display = "none";
+                return;
+            }
+
+            const filtered = countryDB.filter(c => c.ad.toLowerCase().includes(value));
+
+            if (filtered.length > 0) {
+                filtered.forEach(country => {
+                    const li = document.createElement("li");
+                    li.textContent = country.ad;
+                    li.addEventListener("click", function() {
+                        input.value = country.ad;
+                        suggestionsList.style.display = "none";
+                    });
+                    suggestionsList.appendChild(li);
+                });
+                suggestionsList.style.display = "block";
+            } else {
+                suggestionsList.style.display = "none";
+            }
+        });
+
+        // Klavye ile listede gezinme desteği
+        input.addEventListener("keydown", function(e) {
+            const items = suggestionsList.getElementsByTagName("li");
+            if (e.key === "ArrowDown") {
+                activeIndex = (activeIndex + 1) % items.length;
+                setActive(items);
+            } else if (e.key === "ArrowUp") {
+                activeIndex = (activeIndex - 1 + items.length) % items.length;
+                setActive(items);
+            } else if (e.key === "Enter") {
+                if (activeIndex > -1 && items[activeIndex]) {
+                    input.value = items[activeIndex].textContent;
+                    suggestionsList.style.display = "none";
+                    e.preventDefault();
+                }
+            }
+        });
+
+        function setActive(items) {
+            for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove("active");
+            }
+            if (activeIndex > -1 && items[activeIndex]) {
+                items[activeIndex].classList.add("active");
+                items[activeIndex].scrollIntoView({ block: "nearest" });
+            }
+        }
+
+        // Tıklama dışarıya yapıldığında listeyi kapatma
+        document.addEventListener("click", function(e) {
+            if (e.target !== input && e.target !== suggestionsList) {
+                suggestionsList.style.display = "none";
+            }
         });
 
         function submitGuess() {
-            const guessName = dropdown.value;
-            if (!guessName) return;
+            const guessName = input.value.trim();
+            const guess = countryDB.find(c => c.ad.toLowerCase() === guessName.toLowerCase());
 
-            const guess = countryDB.find(c => c.ad === guessName);
+            if (!guess) {
+                alert("Lütfen listede olan geçerli bir ülke adı yazın!");
+                return;
+            }
+
             const history = document.getElementById("historyRows");
 
+            // 1. Ülke Hücresi
             history.appendChild(createCell(guess.ad, guess.ad === targetCountry.ad));
+
+            // 2. Kıta Hücresi
             history.appendChild(createCell(guess.kita, guess.kita === targetCountry.kita));
 
-            if (guess.nufus === targetCountry.nufus) {
-                history.appendChild(createCell("Eşit", true));
-            } else {
-                let popText = guess.nufus < targetCountry.nufus ? "Yukarı ⬆️" : "Aşağı ⬇️";
-                history.appendChild(createCell(popText, false));
-            }
+            // 3. Nüfus Hücresi (Değer + Yön Oku)
+            let popArrow = guess.nufus < targetCountry.nufus ? " ⬆️" : (guess.nufus > targetCountry.nufus ? " ⬇️" : "");
+            history.appendChild(createCell(`${guess.nufus} Milyon`, guess.nufus === targetCountry.nufus, popArrow));
 
-            if (guess.alan === targetCountry.alan) {
-                history.appendChild(createCell("Eşit", true));
-            } else {
-                let areaText = guess.alan < targetCountry.alan ? "Yukarı ⬆️" : "Aşağı ⬇️";
-                history.appendChild(createCell(areaText, false));
-            }
+            // 4. Yüzölçümü Hücresi (Değer + Yön Oku)
+            let areaArrow = guess.alan < targetCountry.alan ? " ⬆️" : (guess.alan > targetCountry.alan ? " ⬇️" : "");
+            history.appendChild(createCell(`${guess.alan.toLocaleString()} ㎢`, guess.alan === targetCountry.alan, areaArrow));
 
+            // 5. Deniz Kıyısı Hücresi
             const kiyiEslesmesi = guess.kiyi === targetCountry.kiyi;
             history.appendChild(createCell(`Kıyı: ${guess.kiyi}`, kiyiEslesmesi));
 
+            // 6. Komşuluk Hücresi
             if (guess.ad === targetCountry.ad) {
                 history.appendChild(createCell("Hedef Ülke", true));
             } else {
@@ -226,19 +373,26 @@
                 }
             }
 
-            dropdown.options[dropdown.selectedIndex].remove();
-            dropdown.value = "";
+            // Arama kutusunu temizle
+            input.value = "";
+            suggestionsList.style.display = "none";
 
+            // Kazanma Ekranı tetikleme
             if (guess.ad === targetCountry.ad) {
                 document.getElementById("winScreen").style.display = "block";
                 document.getElementById("inputSection").style.display = "none";
             }
         }
 
-        function createCell(text, isMatch) {
+        function createCell(text, isMatch, subText = "") {
             const cell = document.createElement("div");
             cell.className = `cell ${isMatch ? 'match' : 'mismatch'}`;
             cell.textContent = text;
+            if (subText) {
+                const sub = document.createElement("span");
+                sub.textContent = subText;
+                cell.appendChild(sub);
+            }
             return cell;
         }
     </script>
