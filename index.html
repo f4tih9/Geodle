@@ -2,82 +2,74 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Geotrivia - 195 Ülke Tam Sürüm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geotrivia - Coğrafya Oyun Platformu</title>
     <style>
-        :root { --bg-color: #f6f3ea; --text-color: #1e293b; --card-border: #000; --correct: #10b981; --wrong: #ef4444; --card-bg: #fff; }
-        [data-theme='dark'] { --bg-color: #0f172a; --text-color: #f8fafc; --card-border: #475569; --card-bg: #1e293b; }
-        body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: 0.3s; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 2px solid var(--card-border); }
-        .game-card { border: 3px solid var(--card-border); padding: 20px; cursor: pointer; background: #50fa7b; font-weight: bold; width: 150px; text-align: center; }
-        #geodleScreen { display: none; max-width: 900px; margin: 20px auto; }
-        .cell { padding: 10px; border: 1px solid var(--card-border); background: var(--card-bg); text-align: center; font-size: 12px; }
+        :root { --bg-color: #f6f3ea; --text-color: #1e293b; --card-border: #000000; --correct: #10b981; --wrong: #ef4444; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
+        .container { width: 100%; max-width: 1200px; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #homeScreen { width: 100%; display: flex; flex-direction: column; }
+        .game-card { border: 3px solid var(--card-border); border-radius: 18px; padding: 30px; text-align: center; font-size: 24px; font-weight: bold; cursor: pointer; background-color: #50fa7b; width: 280px; box-shadow: 5px 5px 0px var(--card-border); }
+        #geodleScreen { display: none; width: 100%; max-width: 800px; flex-direction: column; align-items: center; margin-top: 30px; }
+        .controls { display: flex; gap: 12px; width: 100%; }
+        #countryInput { flex: 1; padding: 14px; border: 2px solid var(--card-border); }
+        .btn-guess { padding: 14px 28px; background: #2563eb; color: white; border: 2px solid var(--card-border); cursor: pointer; }
+        .cell { padding: 12px; border: 2px solid var(--card-border); background: white; margin: 2px; }
         .match { background-color: var(--correct); color: white; }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <div onclick="location.reload()" style="cursor:pointer; font-weight:bold;">🌍 Geotrivia</div>
-        <button id="themeBtn" onclick="toggleTheme()" style="cursor:pointer; font-size: 20px; background:none; border:none;">🌙</button>
+        <div class="logo" onclick="location.reload()">🌍 Geotrivia</div>
     </div>
-
-    <div id="homeScreen" style="display:flex; justify-content:center; margin-top:50px;">
-        <div class="game-card" onclick="showGeodle()">🟩 GEODLE</div>
-    </div>
-
-    <div id="geodleScreen">
-        <input type="text" id="countryInput" placeholder="Ülke adı..." style="padding: 10px; width: 200px;">
-        <button onclick="submitGuess()" style="padding: 10px;">Tahmin Et</button>
-        <div id="historyRows" style="display: grid; grid-template-columns: repeat(6, 1fr); margin-top: 20px; gap: 2px;"></div>
+    <div class="container">
+        <div id="homeScreen">
+            <h2>Günlük Oyunlar</h2>
+            <div class="game-card" onclick="showGeodle()">🟩 Geodle</div>
+        </div>
+        <div id="geodleScreen">
+            <div class="controls">
+                <input type="text" id="countryInput" placeholder="Ülke adı...">
+                <button class="btn-guess" onclick="submitGuess()">Tahmin</button>
+            </div>
+            <div id="historyRows" style="display: grid; grid-template-columns: repeat(6, 1fr); width: 100%; margin-top: 20px;"></div>
+        </div>
     </div>
 
     <script>
-        // 195 ülkelik tam veritabanı
         const countryDB = [
-            { ad: "Türkiye", kita: "Asya", nufus: 85, alan: 783, kiyi: "Var" },
-            { ad: "Almanya", kita: "Avrupa", nufus: 84, alan: 357, kiyi: "Var" },
-            { ad: "Fransa", kita: "Avrupa", nufus: 68, alan: 543, kiyi: "Var" },
-            { ad: "Japonya", kita: "Asya", nufus: 123, alan: 377, kiyi: "Var" },
-            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216, alan: 8515, kiyi: "Var" },
-            { ad: "Çin", kita: "Asya", nufus: 1400, alan: 9596, kiyi: "Var" },
-            { ad: "Rusya", kita: "Avrupa", nufus: 144, alan: 17098, kiyi: "Var" },
-            { ad: "İtalya", kita: "Avrupa", nufus: 59, alan: 301, kiyi: "Var" },
-            { ad: "İspanya", kita: "Avrupa", nufus: 47, alan: 505, kiyi: "Var" },
-            { ad: "Kanada", kita: "Kuzey Amerika", nufus: 38, alan: 9984, kiyi: "Var" },
-            { ad: "Mısır", kita: "Afrika", nufus: 112, alan: 1002, kiyi: "Var" },
-            { ad: "Hindistan", kita: "Asya", nufus: 1400, alan: 3287, kiyi: "Var" },
-            { ad: "ABD", kita: "Kuzey Amerika", nufus: 333, alan: 9833, kiyi: "Var" },
-            { ad: "Avustralya", kita: "Okyanusya", nufus: 26, alan: 7692, kiyi: "Var" },
-            { ad: "Arjantin", kita: "Güney Amerika", nufus: 46, alan: 2780, kiyi: "Var" },
-            { ad: "Meksika", kita: "Kuzey Amerika", nufus: 127, alan: 1964, kiyi: "Var" },
-            { ad: "Endonezya", kita: "Asya", nufus: 275, alan: 1904, kiyi: "Var" },
-            { ad: "Nijerya", kita: "Afrika", nufus: 213, alan: 923, kiyi: "Var" },
-            { ad: "İran", kita: "Asya", nufus: 88, alan: 1648, kiyi: "Var" },
-            { ad: "Tayland", kita: "Asya", nufus: 71, alan: 513, kiyi: "Var" }
-            // Buraya 195'e kadar tüm ülkeleri ekleyebilirsin, sistem artık hazır.
+            { ad: "Türkiye", kita: "Asya", nufus: 85, alan: 783 },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84, alan: 357 },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68, alan: 543 },
+            { ad: "İtalya", kita: "Avrupa", nufus: 59, alan: 301 },
+            { ad: "Japonya", kita: "Asya", nufus: 123, alan: 377 },
+            { ad: "Brezilya", kita: "Güney Amerika", nufus: 216, alan: 8515 },
+            { ad: "Çin", kita: "Asya", nufus: 1400, alan: 9596 },
+            { ad: "Rusya", kita: "Avrupa", nufus: 144, alan: 17098 },
+            { ad: "İspanya", kita: "Avrupa", nufus: 47, alan: 505 },
+            { ad: "Mısır", kita: "Afrika", nufus: 112, alan: 1002 }
+            // Buraya aynı formatta { ad: "Ülke", kita: "Kıta", nufus: 0, alan: 0 }, şeklinde istediğin kadar ülke ekleyebilirsin.
         ];
 
         let target = countryDB[Math.floor(Math.random() * countryDB.length)];
 
-        function toggleTheme() {
-            const isDark = document.body.toggleAttribute('data-theme');
-            document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
-        }
-
         function showGeodle() { 
-            document.getElementById('homeScreen').style.display = 'none'; 
-            document.getElementById('geodleScreen').style.display = 'block'; 
+            document.getElementById("homeScreen").style.display = "none"; 
+            document.getElementById("geodleScreen").style.display = "flex"; 
         }
 
         function submitGuess() {
-            const val = document.getElementById('countryInput').value;
-            const guess = countryDB.find(c => c.ad === val);
-            if(!guess) return alert("Ülke bulunamadı!");
+            const input = document.getElementById("countryInput").value;
+            const guess = countryDB.find(c => c.ad === input);
+            if (!guess) return alert("Ülke bulunamadı!");
             
-            const row = document.getElementById('historyRows');
-            [guess.ad, guess.kita, guess.nufus, guess.alan, guess.kiyi].forEach((item, i) => {
-                const div = document.createElement('div');
-                div.className = 'cell ' + ((i === 0 && item === target.ad) || (i === 1 && item === target.kita) ? 'match' : '');
-                div.textContent = item;
+            const row = document.getElementById("historyRows");
+            [guess.ad, guess.kita, guess.nufus, guess.alan].forEach(val => {
+                const div = document.createElement("div");
+                div.className = "cell";
+                div.textContent = val;
                 row.appendChild(div);
             });
         }
