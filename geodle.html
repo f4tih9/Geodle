@@ -7,14 +7,14 @@
         :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; --header: #334155; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
         
-        .controls { width: 100%; max-width: 450px; margin-bottom: 40px; }
-        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; }
-
+        /* Arama Kutusu Stili */
+        .controls { width: 100%; max-width: 450px; margin-bottom: 40px; position: relative; }
+        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; font-size: 16px; }
+        
         .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 900px; }
         .header-cell { background-color: var(--header); padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
-        .cell { padding: 15px; background: #334155; border-radius: 8px; text-align: center; font-weight: bold; transition: 0.3s; }
+        .cell { padding: 15px; background: #334155; border-radius: 8px; text-align: center; font-weight: bold; }
         
-        /* Renk Durumları */
         .match { background-color: #059669 !important; }
         .mismatch { background-color: #dc2626 !important; }
     </style>
@@ -22,7 +22,7 @@
 <body>
 
     <div class="controls">
-        <input type="text" id="countryInput" placeholder="Ülke adı yaz...">
+        <input type="text" id="countryInput" placeholder="Ülke adı yaz..." autocomplete="off">
     </div>
     
     <div class="grid-layout" id="gameGrid">
@@ -40,7 +40,7 @@
             { ad: "Bulgaristan", kita: "Avrupa", nufus: 6, alan: 110, kiyi: "Var", komsular: ["Türkiye"] }
         ];
         
-        let target = countryDB[0]; // Hedef: Türkiye
+        let target = countryDB[0]; 
         const input = document.getElementById('countryInput');
 
         function submitGuess() {
@@ -48,30 +48,29 @@
             if (!guess) return;
 
             const grid = document.getElementById('gameGrid');
+            const isSame = (guess.ad === target.ad);
+            const isNeighbor = guess.komsular.includes(target.ad);
             
-            // Verileri oluştur
             const data = [
                 guess.ad, 
                 guess.kita, 
                 guess.nufus + (guess.nufus < target.nufus ? " Mn ⬆️" : (guess.nufus > target.nufus ? " Mn ⬇️" : " Mn")),
                 guess.alan + (guess.alan < target.alan ? " km² ⬆️" : (guess.alan > target.alan ? " km² ⬇️" : " km²")),
                 guess.kiyi,
-                (guess.komsular.includes(target.ad) ? "Evet" : "Hayır")
+                isSame ? "Kendisi" : (isNeighbor ? "Evet" : "Hayır")
             ];
 
             data.forEach((val, i) => {
                 const div = document.createElement('div');
                 div.className = 'cell';
-                
-                // Renk mantığı
-                let isCorrect = false;
-                if(i === 0) isCorrect = (guess.ad === target.ad);
-                else if(i === 1) isCorrect = (guess.kita === target.kita);
-                else if(i === 4) isCorrect = (guess.kiyi === target.kiyi);
-                else if(i === 5) isCorrect = (guess.komsular.includes(target.ad));
-                else if(i === 2 || i === 3) isCorrect = (val.includes("Mn") || val.includes("km²")) && (val.includes("⬆️") || val.includes("⬇️") ? false : true);
+                let correct = false;
+                if(i === 0) correct = isSame;
+                else if(i === 1) correct = (guess.kita === target.kita);
+                else if(i === 4) correct = (guess.kiyi === target.kiyi);
+                else if(i === 5) correct = (isSame || isNeighbor);
+                else if(i === 2 || i === 3) correct = !val.includes("⬆️") && !val.includes("⬇️");
 
-                div.className += isCorrect ? " match" : (i < 5 ? " mismatch" : (guess.komsular.includes(target.ad) ? " match" : " mismatch"));
+                div.classList.add(correct ? "match" : "mismatch");
                 div.textContent = val;
                 grid.appendChild(div);
             });
