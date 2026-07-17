@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Geodle - Oyun</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f6f3ea; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .controls { position: relative; width: 400px; }
+        #countryInput { width: 100%; padding: 10px; }
+        #suggestions { position: absolute; background: white; border: 1px solid #000; width: 100%; list-style: none; padding: 0; margin: 0; }
+        .sugg { padding: 10px; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 20px; width: 100%; max-width: 800px; }
+        .cell { padding: 15px; border: 2px solid #000; background: white; text-align: center; }
+        .match { background: #10b981; color: white; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <input type="text" id="countryInput" placeholder="Ülke adı..." autocomplete="off">
+        <ul id="suggestions"></ul>
+    </div>
+    <div id="historyRows" class="grid"></div>
+
+    <script>
+        const countryDB = [
+            { ad: "Türkiye", kita: "Asya", nufus: 85.3, alan: 783562, kiyi: "Var" },
+            { ad: "Bulgaristan", kita: "Avrupa", nufus: 6.8, alan: 110994, kiyi: "Var" },
+            { ad: "Almanya", kita: "Avrupa", nufus: 84.4, alan: 357022, kiyi: "Var" },
+            { ad: "Fransa", kita: "Avrupa", nufus: 68.1, alan: 543965, kiyi: "Var" },
+            { ad: "Japonya", kita: "Asya", nufus: 123.2, alan: 377975, kiyi: "Var" }
+        ];
+
+        let target = countryDB[Math.floor(Math.random() * countryDB.length)];
+        const input = document.getElementById('countryInput');
+        const list = document.getElementById('suggestions');
+
+        input.oninput = () => {
+            list.innerHTML = '';
+            const val = input.value.toLowerCase();
+            if(!val) return;
+            countryDB.filter(c => c.ad.toLowerCase().startsWith(val)).forEach(c => {
+                const li = document.createElement('li');
+                li.className = 'sugg'; li.textContent = c.ad;
+                li.onclick = () => { input.value = c.ad; list.innerHTML = ''; };
+                list.appendChild(li);
+            });
+        };
+
+        input.onkeydown = (e) => {
+            if(e.key === 'Enter') {
+                const firstSugg = list.querySelector('li');
+                if(firstSugg) input.value = firstSugg.textContent;
+                submitGuess();
+            }
+        };
+
+        function submitGuess() {
+            const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
+            if(!guess) return alert("Ülke bulunamadı!");
+            const row = document.getElementById('historyRows');
+            [guess.ad, guess.kita, guess.nufus, guess.alan, guess.kiyi].forEach((val, i) => {
+                const d = document.createElement('div');
+                d.className = 'cell ' + (i === 0 && val === target.ad ? 'match' : '');
+                d.textContent = val;
+                row.appendChild(d);
+            });
+            input.value = ''; list.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
