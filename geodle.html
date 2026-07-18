@@ -49,8 +49,14 @@
         .catch(error => console.error('Hata:', error));
 
     function submitGuess() {
-        const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
-        if (!guess) return;
+        // Türkçe karakterleri doğru küçültmek için toLocaleLowerCase kullanıyoruz
+        const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
+        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === searchValue);
+        
+        if (!guess) {
+            alert("Ülke bulunamadı veya listede yok. Yazımını kontrol et!");
+            return;
+        }
 
         const grid = document.getElementById('gameGrid');
         const isSame = (guess.ad === target.ad);
