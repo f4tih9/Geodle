@@ -34,66 +34,6 @@
         <div class="header-cell">Komşu</div>
     </div>
 
-    let countryDB = [];
-let target;
-const input = document.getElementById('countryInput');
-
-// Veriyi JSON dosyasından çekiyoruz
-fetch('countries.json')
-    .then(response => response.json())
-    .then(data => {
-        countryDB = data;
-        // Tüm ülkeler yüklendikten sonra hedefi seçiyoruz
-        target = countryDB[Math.floor(Math.random() * countryDB.length)];
-        console.log("Hedef ülke seçildi:", target.ad);
-    })
-    .catch(error => console.error('JSON dosyası yüklenemedi:', error));
-
-function submitGuess() {
-    // countryDB artık dolu olduğu için burası çalışacak
-    const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
-    if (!guess) return;
-    
-    // ... geri kalan kodların aynı kalabilir ...
-        
-        let target = countryDB[0]; 
-        const input = document.getElementById('countryInput');
-
-        function submitGuess() {
-            const guess = countryDB.find(c => c.ad.toLowerCase() === input.value.toLowerCase());
-            if (!guess) return;
-
-            const grid = document.getElementById('gameGrid');
-            const isSame = (guess.ad === target.ad);
-            const isNeighbor = guess.komsular.includes(target.ad);
-            
-            const data = [
-                guess.ad, 
-                guess.kita, 
-                guess.nufus + (guess.nufus < target.nufus ? " Mn ⬆️" : (guess.nufus > target.nufus ? " Mn ⬇️" : " Mn")),
-                guess.alan + (guess.alan < target.alan ? " km² ⬆️" : (guess.alan > target.alan ? " km² ⬇️" : " km²")),
-                guess.kiyi,
-                isSame ? "Kendisi" : (isNeighbor ? "Evet" : "Hayır")
-            ];
-
-            data.forEach((val, i) => {
-                const div = document.createElement('div');
-                div.className = 'cell';
-                let correct = false;
-                if(i === 0) correct = isSame;
-                else if(i === 1) correct = (guess.kita === target.kita);
-                else if(i === 4) correct = (guess.kiyi === target.kiyi);
-                else if(i === 5) correct = (isSame || isNeighbor);
-                else if(i === 2 || i === 3) correct = !val.includes("⬆️") && !val.includes("⬇️");
-
-                div.classList.add(correct ? "match" : "mismatch");
-                div.textContent = val;
-                grid.appendChild(div);
-            });
-            input.value = '';
-        }
-        
-        input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
     <script>
     let countryDB = [];
     let target;
@@ -129,6 +69,7 @@ function submitGuess() {
             const div = document.createElement('div');
             div.className = 'cell';
             let correct = false;
+            
             if (i === 0) correct = isSame;
             else if (i === 1) correct = (guess.kita === target.kita);
             else if (i === 4) correct = (guess.kiyi === target.kiyi);
@@ -139,10 +80,11 @@ function submitGuess() {
             div.textContent = val;
             grid.appendChild(div);
         });
+        
         input.value = '';
     }
 
     input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
-</script>
+    </script>
 </body>
 </html>
