@@ -1,5 +1,5 @@
 [
-  {"ad": "Türkiye", "kita": "Asya", "nufus": 85, "alan": 783, "kiyi": "Var", "komsular": ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"]}
+  {"ad": "Türkiye", "kita": "Asya", "nufus": 85, "alan": 783, "kiyi": "Var", "komsular": ["Yunanistan", "Bulgaristan", "Suriye", "Irak", "İran", "Ermenistan", "Gürcistan", "Azerbaycan"]},
   {"ad": "Almanya", "kita": "Avrupa", "nufus": 84, "alan": 357, "kiyi": "Var", "komsular": ["Fransa", "Polonya", "Avusturya", "İsviçre", "Çekya", "Hollanda", "Belçika", "Danimarka", "Lüksemburg"]},
   {"ad": "Fransa", "kita": "Avrupa", "nufus": 68, "alan": 551, "kiyi": "Var", "komsular": ["İspanya", "İtalya", "Almanya", "Belçika", "İsviçre", "Lüksemburg", "Monako", "Andorra"]},
   {"ad": "Rusya", "kita": "Avrupa", "nufus": 144, "alan": 17098, "kiyi": "Var", "komsular": ["Çin", "Moğolistan", "Kazakistan", "Ukrayna", "Belarus", "Finlandiya", "Norveç", "Estonya", "Letonya", "Litvanya", "Polonya", "Gürcistan", "Azerbaycan", "Kuzey Kore"]},
