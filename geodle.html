@@ -109,8 +109,11 @@
         }
 
         // Yazılan harflerle başlayan ülkeleri bul
-        const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val));
-
+        // Hem Türkçe hem İngilizce isimlerle eşleşme ara
+        const matches = countryDB.filter(c => 
+            c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || 
+            c.ad_en.toLowerCase().startsWith(val)
+        );
         if (matches.length > 0) {
             matches.forEach(match => {
                 const div = document.createElement('div');
@@ -142,8 +145,11 @@
 
     function submitGuess() {
         const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
-        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === searchValue);
-
+        // Girilen değeri hem Türkçe hem İngilizce içinde ara
+        const guess = countryDB.find(c => 
+            c.ad.toLocaleLowerCase('tr-TR') === searchValue || 
+            c.ad_en.toLowerCase() === searchValue
+        );
         if (!guess) {
             input.classList.add('error-shake'); 
             setTimeout(() => {
