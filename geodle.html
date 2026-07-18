@@ -17,6 +17,21 @@
         
         .match { background-color: #059669 !important; }
         .mismatch { background-color: #dc2626 !important; }
+
+        /* Hatalı Giriş Titreme Animasyonu */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .error-shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #dc2626 !important; /* Titrerken kenarlığı kırmızı yapar */
+            background-color: #451a23 !important; /* Arka planı hafif kırmızımtırak yapar */
+        }
     </style>
 </head>
 <body>
@@ -49,15 +64,22 @@
         .catch(error => console.error('Hata:', error));
 
     function submitGuess() {
-        // Türkçe karakterleri doğru küçültmek için toLocaleLowerCase kullanıyoruz
         const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
         const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === searchValue);
-        
+
+        // EĞER ÜLKE BULUNAMAZSA ÇALIŞACAK KISIM:
         if (!guess) {
-            alert("Ülke bulunamadı veya listede yok. Yazımını kontrol et!");
-            return;
+            input.classList.add('error-shake'); // Titreme sınıfını ekle
+            
+            // Animasyon bitince (400ms sonra) sınıfı kaldır ki tekrar titreyebilsin
+            setTimeout(() => {
+                input.classList.remove('error-shake');
+            }, 400);
+            
+            return; // İşlemi durdur
         }
 
+        // ... BURADAN AŞAĞISI AYNI KALACAK ...
         const grid = document.getElementById('gameGrid');
         const isSame = (guess.ad === target.ad);
         const isNeighbor = guess.komsular.includes(target.ad);
