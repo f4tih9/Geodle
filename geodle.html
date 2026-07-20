@@ -1,168 +1,67 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark-mode">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Geodle - Pro</title>
+    <title>Ülke Tahmin | Coğrafya Bilgi Yarışması</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; --header: #334155; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        
-        .controls { width: 100%; max-width: 450px; margin-bottom: 40px; position: relative; }
-        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; font-size: 16px; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
-        
-        .suggestions-box {
-            position: absolute;
-            top: 100%; 
-            left: 0;
-            width: 100%;
-            background: var(--cell);
-            border: 2px solid #3b82f6;
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 10;
-            display: none;
-            box-sizing: border-box;
-        }
-        
-        .suggestion-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            color: white;
-            border-bottom: 1px solid #334155;
-            font-weight: bold;
-        }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background-color: #3b82f6; }
-
-        .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 900px; }
-        .header-cell { background-color: var(--header); padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
-        .cell { padding: 15px; background: #334155; border-radius: 8px; text-align: center; font-weight: bold; }
-        
-        .match { background-color: #059669 !important; }
-        .mismatch { background-color: #dc2626 !important; }
-
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            50% { transform: translateX(8px); }
-            75% { transform: translateX(-8px); }
-            100% { transform: translateX(0); }
-        }
-        
-        .error-shake {
-            animation: shake 0.4s ease-in-out;
-            border-color: #dc2626 !important;
-            background-color: #451a23 !important;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f6f3ea; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
+        .profile-btn { border: 2px solid #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; background: white; }
+        .container { width: 100%; max-width: 1200px; padding: 40px; }
+        .game-card { border: 3px solid #000; padding: 30px; background: #50fa7b; border-radius: 18px; font-size: 24px; font-weight: bold; display: inline-block; box-shadow: 5px 5px 0 #000; text-decoration: none; color: #000; }
+        #profileModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 300px; text-align: center; color: #000; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <input type="text" id="countryInput" placeholder="Ülke adı yaz..." autocomplete="off">
-        <div id="suggestions" class="suggestions-box"></div>
-    </div>
-    
-    <div class="grid-layout" id="gameGrid">
-        <div class="header-cell">Ülke</div>
-        <div class="header-cell">Kıta</div>
-        <div class="header-cell">Nüfus</div>
-        <div class="header-cell">Alan</div>
-        <div class="header-cell">Kıyı</div>
-        <div class="header-cell">Komşu</div>
+    <div class="navbar">
+        <div class="logo">🌍 Ülke Tahmin</div>
+        <button class="profile-btn" onclick="document.getElementById('profileModal').style.display = 'flex'">Profil</button>
     </div>
 
-    <script>
-    let countryDB = [];
-    let target;
-    const input = document.getElementById('countryInput');
-    const suggestionsBox = document.getElementById('suggestions');
+    <div class="container">
+        <h2>Günlük Oyunlar</h2>
+        <a href="geodle.html" class="game-card">🟩 Ülke Tahmin</a>
+    </div>
 
-    // Eğer countries.json ana dizinde değilse burayı güncelleyebilirsin
-    fetch('./countries.json')
-        .then(response => response.json())
-        .then(data => {
-            countryDB = data;
-            target = countryDB[Math.floor(Math.random() * countryDB.length)];
-            console.log("Hedef ülke seçildi:", target.ad);
-        })
-        .catch(error => console.error('JSON dosyası yüklenemedi:', error));
+    <div id="profileModal">
+        <div class="modal-content">
+            <h3>Profilim</h3>
+            <button id="googleBtn" style="padding:10px 20px; background:#4285F4; color:white; border:none; border-radius:5px; cursor:pointer;">Google ile Giriş Yap</button>
+            <br><br>
+            <button onclick="document.getElementById('profileModal').style.display = 'none'">Kapat</button>
+        </div>
+    </div>
 
-    input.addEventListener('input', function() {
-        const val = this.value.toLocaleLowerCase('tr-TR').trim();
-        suggestionsBox.innerHTML = '';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        if (!val) {
-            suggestionsBox.style.display = 'none'; 
-            return;
-        }
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDqz82thko2eiOut-yLmb2NhOktnsdUdk",
+            authDomain: "ulketahmin.firebaseapp.com",
+            projectId: "ulketahmin",
+            storageBucket: "ulketahmin.firebasestorage.app",
+            messagingSenderId: "365356269470",
+            appId: "1:365356269470:web:c1a11af53820342f8c208f"
+        };
 
-        const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val));
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        if (matches.length > 0) {
-            matches.forEach(match => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.textContent = match.ad;
-                div.onclick = function() {
-                    input.value = match.ad;
-                    suggestionsBox.style.display = 'none';
-                    submitGuess(); 
-                };
-                suggestionsBox.appendChild(div);
-            });
-            suggestionsBox.style.display = 'block';
-        } else {
-            suggestionsBox.style.display = 'none';
-        }
-    });
-
-    function submitGuess() {
-        const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
-        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === searchValue);
-
-        if (!guess) {
-            input.classList.add('error-shake'); 
-            setTimeout(() => input.classList.remove('error-shake'), 400);
-            return; 
-        }
-
-        const grid = document.getElementById('gameGrid');
-        const isSame = (guess.ad === target.ad);
-        const isNeighbor = guess.komsular.includes(target.ad);
-
-        const data = [
-            guess.ad,
-            guess.kita,
-            guess.nufus + (guess.nufus < target.nufus ? " Mn ⬆️" : (guess.nufus > target.nufus ? " Mn ⬇️" : " Mn")),
-            guess.alan + (guess.alan < target.alan ? " km² ⬆️" : (guess.alan > target.alan ? " km² ⬇️" : " km²")),
-            guess.kiyi,
-            isSame ? "Kendisi" : (isNeighbor ? "Evet" : "Hayır")
-        ];
-
-        data.forEach((val, i) => {
-            const div = document.createElement('div');
-            div.className = 'cell';
-            let correct = false;
-            
-            if (i === 0) correct = isSame;
-            else if (i === 1) correct = (guess.kita === target.kita);
-            else if (i === 4) correct = (guess.kiyi === target.kiyi);
-            else if (i === 5) correct = (isSame || isNeighbor);
-            else if (i === 2 || i === 3) correct = !val.includes("⬆️") && !val.includes("⬇️");
-
-            div.classList.add(correct ? "match" : "mismatch");
-            div.textContent = val;
-            grid.appendChild(div);
-        });
-        
-        input.value = '';
-        suggestionsBox.style.display = 'none';
-    }
-
-    input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
+        document.getElementById('googleBtn').onclick = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                alert("Hoş geldin, " + result.user.displayName);
+                document.getElementById('profileModal').style.display = 'none';
+            } catch (error) {
+                alert("Hata: " + error.message);
+            }
+        };
     </script>
 </body>
 </html>
