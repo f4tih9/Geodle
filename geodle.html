@@ -2,185 +2,123 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Ülke Tahmin | Geodle</title>
+    <title>Ülke Tahmin | Coğrafya Bilgi Yarışması</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ülke Tahmin ile coğrafi bilginizi test edin! Nüfus, alan ve kıta ipuçlarını kullanarak hedef ülkeyi bulun.">
+    
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: #f6f3ea; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh; 
-        }
-        .navbar { 
-            width: 100%; 
-            max-width: 800px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px; 
-            border-bottom: 2px solid #000; 
-            background-color: #fff;
-            box-sizing: border-box;
-        }
-        .logo { 
-            font-size: 24px; 
-            font-weight: bold; 
-            text-decoration: none; 
-            color: #000;
-        }
-        .container { 
-            width: 100%; 
-            max-width: 600px; 
-            padding: 20px; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
-        .game-header {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .input-group {
-            width: 100%;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        .guess-input {
-            flex: 1;
-            padding: 15px;
-            font-size: 18px;
-            border: 3px solid #000;
-            border-radius: 12px;
-            outline: none;
-        }
-        .guess-btn {
-            padding: 15px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            background-color: #50fa7b;
-            color: #000;
-            border: 3px solid #000;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 4px 4px 0 #000;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-        .guess-btn:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0 0 0 #000;
-        }
-        .guesses-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .guess-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #fff;
-            padding: 15px 20px;
-            border: 3px solid #000;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 3px 3px 0 #000;
-        }
-        .correct { 
-            background-color: #50fa7b; 
-        }
-        .wrong { 
-            background-color: #ff5555; 
-            color: white; 
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #f8fafc; margin-bottom: 30px; }
+        .controls { width: 100%; max-width: 450px; position: relative; }
+        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: #1e293b; color: white; font-size: 16px; box-sizing: border-box; }
+        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: #1e293b; border: 2px solid #3b82f6; border-radius: 0 0 12px 12px; z-index: 10; display: none; }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #334155; font-weight: bold; }
+        .suggestion-item:hover { background-color: #3b82f6; }
+        .guess-card { border: 2px solid #333; border-radius: 15px; padding: 15px; margin: 10px auto; background: #fff; width: 450px; color: #000; }
+        .guess-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .box { border: 2px solid #333; border-radius: 10px; padding: 10px; text-align: center; font-weight: bold; font-size: 13px; }
+        .match-c { background-color: #9cdb9c !important; } 
+        .mismatch-c { background-color: #ff8a8a !important; }
+        .neutral-c { background-color: #f0f0f0 !important; }
+        .win-msg { font-size: 24px; font-weight: bold; color: #50fa7b; margin: 20px; display: none; }
+        .reset-btn { margin-top: 10px; padding: 12px 25px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Üst Menü -->
-    <div class="navbar">
-        <a href="index.html" class="logo">🌍 Ülke Tahmin</a>
-        <a href="index.html" style="font-weight:bold; color:#000; text-decoration:none; border: 2px solid #000; padding: 5px 15px; border-radius: 15px; background: #fff;">Ana Sayfaya Dön</a>
+    <h1>Ülke Tahmin</h1>
+    <div class="controls">
+        <input type="text" id="countryInput" placeholder="Bir ülke yazın..." autocomplete="off">
+        <div id="suggestions" class="suggestions-box"></div>
     </div>
+    
+    <div id="winDisplay" class="win-msg">Tebrikler, Bildin!</div>
+    <button id="resetBtn" class="reset-btn" onclick="location.reload()">Yeniden Oyna</button>
+    <div id="gameGrid"></div>
 
-    <!-- Oyun Alanı -->
-    <div class="container">
-        <div class="game-header">Gizli Ülkeyi Bul!</div>
-        <p style="margin-bottom: 20px; text-align: center; font-weight: 500;">Hedef ülkeyi tahmin et. (Cevap: Türkiye)</p>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
-        <div class="input-group">
-            <input type="text" id="guessInput" class="guess-input" placeholder="Ülke adı yaz..." autocomplete="off">
-            <button class="guess-btn" onclick="makeGuess()">Tahmin Et</button>
-        </div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDqz82thko2eiOut-yLmb2NhOktnsdUdk",
+            authDomain: "ulketahmin.firebaseapp.com",
+            projectId: "ulketahmin",
+            storageBucket: "ulketahmin.firebasestorage.app",
+            messagingSenderId: "365356269470",
+            appId: "1:365356269470:web:c1a11af53820342f8c208f",
+            measurementId: "G-1GQM3MFNJH"
+        };
 
-        <!-- Tahminlerin Listeleneceği Alan -->
-        <div id="guessesList" class="guesses-container">
-            <!-- JavaScript ile yeni satırlar buraya eklenecek -->
-        </div>
-    </div>
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
 
+    <!-- Oyun Mantığı -->
     <script>
-        // Oyunun asıl cevabı
-        const secretCountry = "Türkiye";
-        const guessesList = document.getElementById('guessesList');
-        const inputField = document.getElementById('guessInput');
+        let countryDB = [], target, guessCount = 0;
+        const input = document.getElementById('countryInput');
+        const suggestionsBox = document.getElementById('suggestions');
 
-        // Enter tuşuna basıldığında butonun tıklanmasını sağlama
-        inputField.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                makeGuess();
-            }
+        fetch('countries.json')
+            .then(res => res.json())
+            .then(data => { countryDB = data; target = countryDB[Math.floor(Math.random() * countryDB.length)]; });
+
+        input.addEventListener('input', function() {
+            const val = this.value.toLocaleLowerCase('tr-TR').trim();
+            if (!val) { suggestionsBox.style.display = 'none'; return; }
+            const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val));
+            suggestionsBox.innerHTML = '';
+            matches.forEach(match => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = match.ad;
+                div.onclick = () => { input.value = match.ad; submitGuess(); };
+                suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.style.display = matches.length ? 'block' : 'none';
         });
 
-        function makeGuess() {
-            // Kullanıcının girdiği kelimeyi al ve sağdaki soldaki boşlukları sil
-            const guess = inputField.value.trim();
+        function submitGuess() {
+            const val = input.value.toLocaleLowerCase('tr-TR').trim();
+            const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
+            if (!guess) return;
+
+            guessCount++;
+            const isNeighbor = guess.komsular.includes(target.ad);
+            const card = document.createElement('div');
+            card.className = 'guess-card';
             
-            // Eğer boş bir şey girildiyse uyarı ver
-            if (guess === "") {
-                alert("Lütfen bir ülke adı girin!");
-                return;
+            const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
+            const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="https://flagcdn.com/24x18/${guess.kod.toLowerCase()}.png">
+                        <span style="font-weight:bold;">${guess.ad}</span>
+                    </div>
+                    <span>#${guessCount}</span>
+                </div>
+                <div class="guess-grid">
+                    <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${guess.kita === target.kita ? '✔️' : '✕'} ${guess.kita}</div>
+                    <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${guess.kiyi === target.kiyi ? '✔️' : '✕'} ${guess.kiyi}</div>
+                    <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${(guess.ad === target.ad || isNeighbor) ? '✔️' : '✕'} ${isNeighbor ? 'EVET' : 'HAYIR'}</div>
+                    <div class="box neutral-c">Nüfus<br><span style="font-size:16px;">${popArr}</span> ${guess.nufus} Mn</div>
+                    <div class="box neutral-c">Arazi Alanı<br><span style="font-size:16px;">${areaArr}</span> ${guess.alan}k km²</div>
+                </div>
+            `;
+            document.getElementById('gameGrid').prepend(card);
+
+            if (guess.ad === target.ad) {
+                input.style.display = "none";
+                document.getElementById('winDisplay').style.display = "block";
+                document.getElementById('resetBtn').style.display = "block";
             }
-
-            // Yeni bir tahmin satırı (div) oluştur
-            const row = document.createElement('div');
-            row.classList.add('guess-row');
-
-            // Büyük/küçük harf duyarlılığını ortadan kaldırarak kontrol et
-            if (guess.toLocaleLowerCase('tr-TR') === secretCountry.toLocaleLowerCase('tr-TR')) {
-                row.classList.add('correct');
-                row.innerHTML = `<span>${guess}</span> <span>🎉 Doğru!</span>`;
-                
-                // Doğru bilindikten sonra girdi alanını kapat
-                inputField.disabled = true; 
-                inputField.placeholder = "Tebrikler, buldun!";
-                
-                // Oyunu kazandı butonu gizle/kapat
-                document.querySelector('.guess-btn').disabled = true;
-                document.querySelector('.guess-btn').style.opacity = "0.5";
-            } else {
-                row.classList.add('wrong');
-                row.innerHTML = `<span>${guess}</span> <span>❌ Yanlış</span>`;
-            }
-
-            // Yapılan tahmini listenin en üstüne ekle
-            guessesList.prepend(row);
-            
-            // Bir sonraki tahmin için girdi kutusunu temizle
-            inputField.value = "";
-            inputField.focus(); // İmleci tekrar kutuya odakla
+            input.value = ''; suggestionsBox.style.display = 'none';
         }
+        input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
     </script>
 </body>
 </html>
