@@ -13,7 +13,7 @@
         }
 
         body {
-            background-color: #f2e8cf; /* İstediğin Bej Renk Kodu */
+            background-color: #f2e8cf; 
             color: #000;
             padding: 30px 20px;
             display: flex;
@@ -22,7 +22,6 @@
             min-height: 100vh;
         }
 
-        /* Ana Düzen */
         .app-container {
             width: 100%;
             max-width: 850px;
@@ -83,11 +82,10 @@
             flex-wrap: wrap;
         }
 
-        /* Oyun Kartı */
+        /* Oyun Kartı Ortak Özellikleri */
         .game-card {
             width: 210px;
             height: 210px;
-            background-color: #8ce1a6;
             border: 3px solid #000;
             border-radius: 20px;
             box-shadow: 5px 5px 0px #000;
@@ -98,7 +96,6 @@
             cursor: pointer;
             text-decoration: none;
             overflow: hidden;
-            
             transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
@@ -117,6 +114,29 @@
             height: 100%;
             object-fit: cover;
             border-radius: 14px;
+        }
+
+        /* Kart Renkleri */
+        .card-green {
+            background-color: #8ce1a6;
+        }
+
+        .card-blue {
+            background-color: #9cdbfe;
+        }
+
+        /* Yeni Oyun İçin Geçici Yazı Stili */
+        .placeholder-content {
+            text-align: center;
+            color: #000;
+            font-weight: 700;
+            font-size: 20px;
+        }
+        
+        .placeholder-icon {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -148,9 +168,20 @@
         <!-- İçerik -->
         <main>
             <div class="games-grid">
-                <a href="https://ulketahmin.xyz/geodle.html" class="game-card">
+                
+                <!-- 1. OYUN: Ülke Tahmin (Yeşil) -->
+                <a href="https://ulketahmin.xyz/geodle.html" class="game-card card-green">
                     <img src="ulke-tahmin.jpg.png" alt="Ülke Tahmin Oyunu">
                 </a>
+
+                <!-- 2. OYUN: Bayrak Tahmin (Mavi) -->
+                <a href="bayrak-tahmin.html" class="game-card card-blue">
+                    <div class="placeholder-content">
+                        <span class="placeholder-icon">🏳️</span>
+                        Bayrak Tahmin
+                    </div>
+                </a>
+
             </div>
         </main>
     </div>
