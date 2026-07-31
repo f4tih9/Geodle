@@ -13,30 +13,24 @@
         }
 
         body {
-            background-color: #f7f4ea;
+            background-color: #f5f1e6; /* Belirttiğin Bej Tonu */
             color: #000;
-            padding: 20px;
+            padding: 30px 20px;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
         }
 
-        /* Ana Çerçeve */
+        /* Ana Düzen */
         .app-container {
             width: 100%;
-            max-width: 900px;
-            background-color: #f7f4ea;
-            border: 3.5px solid #000;
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 8px 8px 0px #000;
-            min-height: 500px;
+            max-width: 850px;
         }
 
         /* Üst Menü (Header) */
         .header {
-            background-color: #fcfbf7;
+            background-color: #fdfbf7;
             border: 3px solid #000;
             border-radius: 18px;
             padding: 12px 20px;
@@ -44,7 +38,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 4px 4px 0px #000;
-            margin-bottom: 28px;
+            margin-bottom: 35px;
         }
 
         .logo-container {
@@ -60,8 +54,8 @@
 
         .logo-text {
             font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
         }
 
         .profile-btn {
@@ -71,7 +65,7 @@
             background: none;
             border: none;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
         }
 
@@ -85,8 +79,8 @@
 
         /* Başlık */
         .section-title {
-            font-size: 24px;
-            font-weight: 800;
+            font-size: 22px;
+            font-weight: 600;
             margin-bottom: 20px;
         }
 
@@ -96,15 +90,15 @@
             flex-wrap: wrap;
         }
 
-        /* Oyun Kartı (Tıklanabilir Buton) */
+        /* Oyun Kartı */
         .game-card {
-            width: 220px;
-            height: 220px;
-            background-color: #8ce1a6; /* Resmin yeşiline uyumlu zemin */
-            border: 3.5px solid #000;
+            width: 210px;
+            height: 210px;
+            background-color: #8ce1a6;
+            border: 3px solid #000;
             border-radius: 20px;
-            box-shadow: 6px 6px 0px #000;
-            padding: 6px;
+            box-shadow: 5px 5px 0px #000;
+            padding: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -112,29 +106,24 @@
             text-decoration: none;
             overflow: hidden;
             
-            /* Animasyonlar */
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
-                        box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
-        /* Hover (Üzerine Gelince) Efekti */
         .game-card:hover {
             transform: translate(-3px, -3px);
-            box-shadow: 9px 9px 0px #000;
+            box-shadow: 8px 8px 0px #000;
         }
 
-        /* Active (Basılınca İçeri Çökme) Animasyonu */
         .game-card:active {
-            transform: translate(4px, 4px);
+            transform: translate(3px, 3px);
             box-shadow: 2px 2px 0px #000;
         }
 
-        /* Buton İçindeki Resim */
         .game-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 14px;
         }
     </style>
 </head>
@@ -144,7 +133,6 @@
         <!-- Üst Bar -->
         <header class="header">
             <div class="logo-container">
-                <!-- Pusula ve Kırmızı Pin Logosu -->
                 <svg class="logo-icon" viewBox="0 0 100 100" fill="none">
                     <circle cx="50" cy="50" r="38" stroke="#000" stroke-width="5" fill="#fcfbf7"/>
                     <polygon points="50,18 62,50 50,82 38,50" fill="#fff" stroke="#000" stroke-width="3"/>
@@ -169,7 +157,6 @@
             <h2 class="section-title">Günlük Oyunlar</h2>
             
             <div class="games-grid">
-                <!-- Oyun Yönlendirme Linki -->
                 <a href="https://ulketahmin.xyz/geodle.html" class="game-card">
                     <img src="ulke-tahmin.jpg.png" alt="Ülke Tahmin Oyunu">
                 </a>
