@@ -27,10 +27,10 @@
             width: 100%;
             max-width: 900px;
             background-color: #f7f4ea;
-            border: 3px solid #000;
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 6px 6px 0px #000;
+            border: 3.5px solid #000;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 8px 8px 0px #000;
             min-height: 500px;
         }
 
@@ -38,7 +38,7 @@
         .header {
             background-color: #fcfbf7;
             border: 3px solid #000;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 12px 20px;
             display: flex;
             justify-content: space-between;
@@ -76,8 +76,8 @@
         }
 
         .profile-icon {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border: 2px solid #000;
             border-radius: 50%;
             padding: 2px;
@@ -90,21 +90,14 @@
             margin-bottom: 20px;
         }
 
-        /* Oyunlar Izgarası */
-        .games-grid {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
         /* Oyun Kartı (Tıklanabilir Buton) */
         .game-card {
-            width: 210px;
-            height: 210px;
-            background-color: #52e085; /* Yeşil renk */
-            border: 3px solid #000;
+            width: 220px;
+            height: 220px;
+            background-color: #52e085; /* Yeşil zemin */
+            border: 3.5px solid #000;
             border-radius: 20px;
-            box-shadow: 5px 5px 0px #000;
+            box-shadow: 6px 6px 0px #000;
             padding: 16px;
             display: flex;
             flex-direction: column;
@@ -114,31 +107,34 @@
             text-decoration: none;
             color: #000;
             user-select: none;
-            /* Akıcı geçiş efekti */
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            
+            /* Animasyon Süresi (0.3s) */
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         /* Hover (Üzerine Gelince) Efekti */
         .game-card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 7px 7px 0px #000;
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0px #000;
         }
 
         /* Active (Basılınca İçeri Çökme) Animasyonu */
         .game-card:active {
-            transform: translate(3px, 3px);
+            transform: translate(4px, 4px);
             box-shadow: 2px 2px 0px #000;
         }
 
+        /* Kart İçindeki Resim */
         .game-card-img {
             width: 100%;
-            height: 120px;
+            height: 130px;
             object-fit: contain;
-            margin-top: 4px;
+            border-radius: 8px;
         }
 
         .game-card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 800;
             text-align: center;
         }
@@ -150,13 +146,12 @@
         <!-- Üst Bar -->
         <header class="header">
             <div class="logo-container">
-                <!-- Pusula ve Kırmızı Pin Logosu (SVG) -->
+                <!-- Pusula ve Kırmızı Pin Logosu -->
                 <svg class="logo-icon" viewBox="0 0 100 100" fill="none">
                     <circle cx="50" cy="50" r="38" stroke="#000" stroke-width="5" fill="#fcfbf7"/>
                     <polygon points="50,18 62,50 50,82 38,50" fill="#fff" stroke="#000" stroke-width="3"/>
                     <polygon points="50,18 62,50 50,50" fill="#000"/>
                     <polygon points="50,50 38,50 50,82" fill="#000"/>
-                    <!-- Pin İşareti -->
                     <path d="M58 22 C58 15 50 12 50 20 C50 27 58 32 58 32 C58 32 66 27 66 20 C66 15 58 15 58 22 Z" fill="#e63946" stroke="#000" stroke-width="2"/>
                 </svg>
                 <span class="logo-text">Ülke Tahmin</span>
@@ -176,26 +171,10 @@
             <h2 class="section-title">Günlük Oyunlar</h2>
             
             <div class="games-grid">
-                <!-- Oyun Butonu -->
-                <a href="#" class="game-card">
-                    <!-- Kart İçi Çizim Görseli -->
-                    <svg class="game-card-img" viewBox="0 0 200 120" fill="none">
-                        <!-- Harita Çizgileri -->
-                        <path d="M20 40 Q40 20 70 35 T130 30 T180 50" stroke="#000" stroke-width="2" stroke-dasharray="3,3"/>
-                        <path d="M30 60 Q60 80 110 70 T170 85" stroke="#000" stroke-width="2" stroke-dasharray="3,3"/>
-                        
-                        <!-- Bayraklar -->
-                        <rect x="85" y="15" width="16" height="10" fill="#E63946" stroke="#000" stroke-width="1.5"/>
-                        <rect x="110" y="22" width="16" height="10" fill="#457B9D" stroke="#000" stroke-width="1.5"/>
-                        <rect x="145" y="30" width="16" height="10" fill="#F4A261" stroke="#000" stroke-width="1.5"/>
-                        <rect x="40" y="65" width="16" height="10" fill="#2A9D8F" stroke="#000" stroke-width="1.5"/>
-
-                        <!-- Büyüteç ve Soru İşareti -->
-                        <circle cx="95" cy="55" r="28" fill="#FFF" stroke="#000" stroke-width="3"/>
-                        <line x1="115" y1="75" x2="140" y2="100" stroke="#000" stroke-width="6" stroke-linecap="round"/>
-                        <text x="89" y="64" font-family="sans-serif" font-weight="bold" font-size="26" fill="#000">?</text>
-                    </svg>
-
+                <!-- Oyun Yönlendirme Linki -->
+                <a href="https://ulketahmin.xyz/geodle.html" class="game-card">
+                    <!-- Resim Görseli -->
+                    <img src="ulke-tahmin-resmi.png" alt="Ülke Tahmin" class="game-card-img">
                     <span class="game-card-title">Ülke Tahmin</span>
                 </a>
             </div>
