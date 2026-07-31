@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayrak Tahmin</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f2e8cf; /* Sitenin güncel bej rengi */
+            color: #000;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px; /* Oyun alanı için daha derli toplu bir genişlik */
+        }
+
+        /* Üst Menü */
+        .header {
+            background-color: #fdfbf7;
+            border: 3px solid #000;
+            border-radius: 18px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 4px 4px 0px #000;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        /* Oyun Ekranı Kutusu */
+        .game-card {
+            background-color: #fdfbf7;
+            border: 3px solid #000;
+            border-radius: 20px;
+            box-shadow: 6px 6px 0px #000;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .progress-text {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .flag-container {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .flag-container img {
+            max-width: 100%;
+            height: 180px;
+            object-fit: contain;
+            border: 2px solid #000;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 5px;
+        }
+
+        /* Şıklar (Seçenekler) */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #000;
+            transition: transform 0.15s, box-shadow 0.15s, background-color 0.2s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+            background-color: #f2e8cf;
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        /* Doğru / Yanlış Renkleri */
+        .correct {
+            background-color: #8ce1a6 !important; /* Başarılı yeşili */
+            color: #000;
+        }
+
+        .wrong {
+            background-color: #ff6b6b !important; /* Hata kırmızısı */
+            color: #fff;
+        }
+
+        /* Sonuç Ekranı */
+        #result-screen {
+            display: none;
+        }
+
+        .score-text {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 20px 0;
+            color: #000;
+        }
+
+        .play-again-btn {
+            background-color: #8ce1a6;
+            border: 3px solid #000;
+            border-radius: 12px;
+            padding: 16px 30px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #000;
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-top: 10px;
+        }
+
+        .play-again-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .play-again-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        /* Mobil Uyum */
+        @media (max-width: 480px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Üst Bar -->
+        <header class="header">
+            <!-- Geri butonu ana sayfana (index.html) yönlendirir -->
+            <a href="index.html" class="back-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <span class="logo-text">Bayrak Tahmin</span>
+            <div style="width: 24px;"></div> <!-- Ortalamayı dengelemek için boş div -->
+        </header>
+
+        <!-- Oyun Alanı -->
+        <main class="game-card" id="game-screen">
+            <div class="progress-text">Soru <span id="current-q">1</span> / 10</div>
+            
+            <div class="flag-container">
+                <img id="flag-img" src="" alt="Ülke Bayrağı">
+            </div>
+
+            <div class="options-grid" id="options">
+                <!-- JS ile butonlar buraya gelecek -->
+            </div>
+        </main>
+
+        <!-- Sonuç Ekranı -->
+        <main class="game-card" id="result-screen">
+            <h2>Oyun Bitti!</h2>
+            <div class="score-text"><span id="score">0</span> / 10</div>
+            <p style="margin-bottom: 20px; font-weight: 600; font-size: 18px;" id="result-message"></p>
+            <button class="play-again-btn" onclick="startGame()">Tekrar Oyna</button>
+        </main>
+    </div>
+
+    <!-- Oyun Mantığı (JavaScript) -->
+    <script>
+        // Ülke veritabanı (İsteğe göre eklenebilir/çıkarılabilir)
+        const countryDB = [
+            { code: 'tr', name: 'Türkiye' }, { code: 'de', name: 'Almanya' }, { code: 'fr', name: 'Fransa' },
+            { code: 'it', name: 'İtalya' }, { code: 'es', name: 'İspanya' }, { code: 'gb', name: 'Birleşik Krallık' },
+            { code: 'us', name: 'ABD' }, { code: 'jp', name: 'Japonya' }, { code: 'br', name: 'Brezilya' },
+            { code: 'ar', name: 'Arjantin' }, { code: 'ca', name: 'Kanada' }, { code: 'mx', name: 'Meksika' },
+            { code: 'ru', name: 'Rusya' }, { code: 'cn', name: 'Çin' }, { code: 'in', name: 'Hindistan' },
+            { code: 'au', name: 'Avustralya' }, { code: 'za', name: 'Güney Afrika' }, { code: 'kr', name: 'Güney Kore' },
+            { code: 'sa', name: 'Suudi Arabistan' }, { code: 'se', name: 'İsveç' }, { code: 'no', name: 'Norveç' },
+            { code: 'fi', name: 'Finlandiya' }, { code: 'gr', name: 'Yunanistan' }, { code: 'eg', name: 'Mısır' },
+            { code: 'nl', name: 'Hollanda' }, { code: 'ch', name: 'İsviçre' }, { code: 'pt', name: 'Portekiz' },
+            { code: 'ie', name: 'İrlanda' }, { code: 'nz', name: 'Yeni Zelanda' }, { code: 'dk', name: 'Danimarka' },
+            { code: 'az', name: 'Azerbaycan' }, { code: 'ua', name: 'Ukrayna' }, { code: 'dz', name: 'Cezayir' },
+            { code: 'ma', name: 'Fas' }, { code: 'co', name: 'Kolombiya' }, { code: 'pe', name: 'Peru' }
+        ];
+
+        let selectedQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Diziyi rastgele karıştıran yardımcı fonksiyon (Fisher-Yates Algoritması)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Oyunu Başlat
+        function startGame() {
+            // Arayüzü ayarla
+            document.getElementById("game-screen").style.display = "block";
+            document.getElementById("result-screen").style.display = "none";
+            
+            score = 0;
+            currentQuestionIndex = 0;
+
+            // Rastgele 10 farklı ülke seç
+            const shuffledDB = shuffleArray([...countryDB]);
+            selectedQuestions = shuffledDB.slice(0, 10);
+
+            loadQuestion();
+        }
+
+        // Soruyu Ekrana Yükle
+        function loadQuestion() {
+            const currentCountry = selectedQuestions[currentQuestionIndex];
+            
+            // UI Güncelleme
+            document.getElementById("current-q").innerText = currentQuestionIndex + 1;
+            document.getElementById("flag-img").src = `https://flagcdn.com/w320/${currentCountry.code}.png`;
+
+            // Yanlış şıkları belirle
+            let otherCountries = countryDB.filter(c => c.code !== currentCountry.code);
+            otherCountries = shuffleArray(otherCountries);
+            
+            // 1 doğru + 3 rastgele yanlış şık
+            let options = [currentCountry, otherCountries[0], otherCountries[1], otherCountries[2]];
+            options = shuffleArray(options); // Şıkların yerlerini karıştır
+
+            // Butonları HTML'e bas
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = ""; // Önceki butonları temizle
+
+            options.forEach(option => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option.name;
+                btn.onclick = () => checkAnswer(btn, option.code === currentCountry.code);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // Cevabı Kontrol Et
+        function checkAnswer(selectedBtn, isCorrect) {
+            // Tüm butonları tıklanamaz yap (çift tıklamayı engellemek için)
+            const allBtns = document.querySelectorAll(".option-btn");
+            allBtns.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                selectedBtn.classList.add("correct");
+                score++;
+            } else {
+                selectedBtn.classList.add("wrong");
+                // Doğru olanı bul ve yeşil yap
+                const currentCountryCode = selectedQuestions[currentQuestionIndex].code;
+                allBtns.forEach(btn => {
+                    if (countryDB.find(c => c.name === btn.innerText).code === currentCountryCode) {
+                        btn.classList.add("correct");
+                    }
+                });
+            }
+
+            // 1.2 saniye bekle, sonraki soruya geç
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < 10) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 1200);
+        }
+
+        // Oyunu Bitir
+        function endGame() {
+            document.getElementById("game-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            
+            document.getElementById("score").innerText = score;
+
+            let message = "";
+            if(score === 10) message = "Kusursuz! Sen bir coğrafya dehasısın 🌍";
+            else if(score >= 7) message = "Tebrikler, harika bir iş çıkardın! 🎉";
+            else if(score >= 4) message = "Fena değil, biraz daha pratik yapabilirsin. 👍";
+            else message = "Coğrafya çalışmaya başlasak iyi olur! 📚";
+
+            document.getElementById("result-message").innerText = message;
+        }
+
+        // Sayfa yüklendiğinde oyunu başlat
+        window.onload = startGame;
+    </script>
+</body>
+</html>
