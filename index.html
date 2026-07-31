@@ -2,71 +2,205 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Ülke Tahmin | Coğrafya Bilgi Yarışması</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Google AdSense Doğrulama Kodu -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5533325488690660"
-         crossorigin="anonymous"></script>
-
+    <title>Ülke Tahmin</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f6f3ea; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
-        .profile-btn { border: 2px solid #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; background: white; }
-        .container { width: 100%; max-width: 1200px; padding: 40px; }
-        .game-card { border: 3px solid #000; padding: 30px; background: #50fa7b; border-radius: 18px; font-size: 24px; font-weight: bold; display: inline-block; box-shadow: 5px 5px 0 #000; text-decoration: none; color: #000; }
-        #profileModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 300px; text-align: center; color: #000; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f7f4ea;
+            color: #000;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Ana Çerçeve */
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #f7f4ea;
+            border: 3px solid #000;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 6px 6px 0px #000;
+            min-height: 500px;
+        }
+
+        /* Üst Menü (Header) */
+        .header {
+            background-color: #fcfbf7;
+            border: 3px solid #000;
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 4px 4px 0px #000;
+            margin-bottom: 28px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .profile-icon {
+            width: 26px;
+            height: 26px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            padding: 2px;
+        }
+
+        /* Başlık */
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        /* Oyunlar Izgarası */
+        .games-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Oyun Kartı (Tıklanabilir Buton) */
+        .game-card {
+            width: 210px;
+            height: 210px;
+            background-color: #52e085; /* Yeşil renk */
+            border: 3px solid #000;
+            border-radius: 20px;
+            box-shadow: 5px 5px 0px #000;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            text-decoration: none;
+            color: #000;
+            user-select: none;
+            /* Akıcı geçiş efekti */
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        /* Hover (Üzerine Gelince) Efekti */
+        .game-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #000;
+        }
+
+        /* Active (Basılınca İçeri Çökme) Animasyonu */
+        .game-card:active {
+            transform: translate(3px, 3px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .game-card-img {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            margin-top: 4px;
+        }
+
+        .game-card-title {
+            font-size: 18px;
+            font-weight: 800;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <div class="logo">🌍 Ülke Tahmin</div>
-        <button class="profile-btn" onclick="document.getElementById('profileModal').style.display = 'flex'">Profil</button>
+    <div class="app-container">
+        <!-- Üst Bar -->
+        <header class="header">
+            <div class="logo-container">
+                <!-- Pusula ve Kırmızı Pin Logosu (SVG) -->
+                <svg class="logo-icon" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="38" stroke="#000" stroke-width="5" fill="#fcfbf7"/>
+                    <polygon points="50,18 62,50 50,82 38,50" fill="#fff" stroke="#000" stroke-width="3"/>
+                    <polygon points="50,18 62,50 50,50" fill="#000"/>
+                    <polygon points="50,50 38,50 50,82" fill="#000"/>
+                    <!-- Pin İşareti -->
+                    <path d="M58 22 C58 15 50 12 50 20 C50 27 58 32 58 32 C58 32 66 27 66 20 C66 15 58 15 58 22 Z" fill="#e63946" stroke="#000" stroke-width="2"/>
+                </svg>
+                <span class="logo-text">Ülke Tahmin</span>
+            </div>
+            
+            <button class="profile-btn">
+                <span>Profil</span>
+                <svg class="profile-icon" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </header>
+
+        <!-- İçerik -->
+        <main>
+            <h2 class="section-title">Günlük Oyunlar</h2>
+            
+            <div class="games-grid">
+                <!-- Oyun Butonu -->
+                <a href="#" class="game-card">
+                    <!-- Kart İçi Çizim Görseli -->
+                    <svg class="game-card-img" viewBox="0 0 200 120" fill="none">
+                        <!-- Harita Çizgileri -->
+                        <path d="M20 40 Q40 20 70 35 T130 30 T180 50" stroke="#000" stroke-width="2" stroke-dasharray="3,3"/>
+                        <path d="M30 60 Q60 80 110 70 T170 85" stroke="#000" stroke-width="2" stroke-dasharray="3,3"/>
+                        
+                        <!-- Bayraklar -->
+                        <rect x="85" y="15" width="16" height="10" fill="#E63946" stroke="#000" stroke-width="1.5"/>
+                        <rect x="110" y="22" width="16" height="10" fill="#457B9D" stroke="#000" stroke-width="1.5"/>
+                        <rect x="145" y="30" width="16" height="10" fill="#F4A261" stroke="#000" stroke-width="1.5"/>
+                        <rect x="40" y="65" width="16" height="10" fill="#2A9D8F" stroke="#000" stroke-width="1.5"/>
+
+                        <!-- Büyüteç ve Soru İşareti -->
+                        <circle cx="95" cy="55" r="28" fill="#FFF" stroke="#000" stroke-width="3"/>
+                        <line x1="115" y1="75" x2="140" y2="100" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+                        <text x="89" y="64" font-family="sans-serif" font-weight="bold" font-size="26" fill="#000">?</text>
+                    </svg>
+
+                    <span class="game-card-title">Ülke Tahmin</span>
+                </a>
+            </div>
+        </main>
     </div>
 
-    <div class="container">
-        <h2>Günlük Oyunlar</h2>
-        <a href="geodle.html" class="game-card">🟩 Ülke Tahmin</a>
-    </div>
-
-    <div id="profileModal">
-        <div class="modal-content">
-            <h3>Profilim</h3>
-            <button id="googleBtn" style="padding:10px 20px; background:#4285F4; color:white; border:none; border-radius:5px; cursor:pointer;">Google ile Giriş Yap</button>
-            <br><br>
-            <button onclick="document.getElementById('profileModal').style.display = 'none'">Kapat</button>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDDqz82thko2eiOut-yLmb2NhOktnsdUdk",
-            authDomain: "ulketahmin.firebaseapp.com",
-            projectId: "ulketahmin",
-            storageBucket: "ulketahmin.firebasestorage.app",
-            messagingSenderId: "365356269470",
-            appId: "1:365356269470:web:c1a11af53820342f8c208f"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        document.getElementById('googleBtn').onclick = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                alert("Hoş geldin, " + result.user.displayName);
-                document.getElementById('profileModal').style.display = 'none';
-            } catch (error) {
-                alert("Hata: " + error.message);
-            }
-        };
-    </script>
 </body>
 </html>
